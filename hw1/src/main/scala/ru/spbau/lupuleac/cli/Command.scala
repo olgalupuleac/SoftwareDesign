@@ -2,7 +2,7 @@ package ru.spbau.lupuleac.cli
 
 import sys.process._
 
-trait Command extends Expression {
+trait Command {
   def execute(arguments: Argument*) : Output
 }
 

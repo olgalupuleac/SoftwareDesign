@@ -2,7 +2,7 @@ package ru.spbau.lupuleac.cli
 
 import scala.io.Source
 
-trait Argument extends Expression {
+trait Argument {
   def asFile : String
   def asString : String
 }

@@ -29,5 +29,5 @@ class LexerTest extends FlatSpec with Matchers {
     tokens(1) should be ("new k  \" my name \" world")
   }
 
-
+  "A parser" should "also ignore"
 }
