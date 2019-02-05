@@ -56,6 +56,11 @@ case class ProcessToken(token : String) extends LexerAction {
 
 
 class Lexer(scope : Scope) {
+  def getToken(action: LexerAction) : String = action match {
+    case ReadingVarCall(_, varName) => scope(varName)
+    case _ => action.token
+  }
+
   def splitLineToTokens(line : String) : List[String] = {
     var res = new ListBuffer[String]()
     var action = ReadingSimple("") : LexerAction
@@ -63,25 +68,28 @@ class Lexer(scope : Scope) {
     for(c <- line) {
       val (addToToken, newAction) = action.processChar(c)
       if (addToToken) {
-        val token = action match {
-          case ReadingVarCall(_, varName) => scope(varName)
-          case _ => action.token
-        }
+        val token = getToken(action)
         curToken += token
       }
       newAction match {
         case ProcessToken("") =>
-          res += curToken
+          if (curToken != "") {
+            res += curToken
+          }
           curToken = ""
           action = ReadingSimple("")
         case ProcessToken("|") =>
-          res += curToken
+          if (curToken != "") {
+            res += curToken
+          }
           res += "|"
           curToken = ""
           action = ReadingSimple("")
         case _ => action = newAction
       }
     }
+    curToken += getToken(action)
+    res += curToken
     res.toList
   }
 }
