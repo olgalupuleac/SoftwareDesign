@@ -15,6 +15,7 @@ class LexerTest extends FlatSpec with Matchers {
     val line = "Hello 'new k'  \" my name \" world"
     val parser = new Lexer(new Scope())
     val tokens = parser.splitLineToTokens(line)
+    tokens.length should be (4)
     tokens.head should be ("Hello")
     tokens(1) should be ("new k")
     tokens(2) should be (" my name ")
@@ -25,9 +26,29 @@ class LexerTest extends FlatSpec with Matchers {
     val line = "Hello 'new k  \" my name \" world'"
     val parser = new Lexer(new Scope())
     val tokens = parser.splitLineToTokens(line)
+    tokens.length should be (2)
     tokens.head should be ("Hello")
     tokens(1) should be ("new k  \" my name \" world")
   }
 
-  "A parser" should "also ignore"
+  "A parser" should "also parse several quoted tokens as one" in {
+    val line = "e'c'\"h\"o"
+    val parser = new Lexer(new Scope())
+    val tokens = parser.splitLineToTokens(line)
+    tokens.head should be ("echo")
+    tokens.length should be(1)
+  }
+
+  "A parser" should "substitute variables correctly" in {
+    val line = "echo \"$FILE x\""
+    val scope = new Scope()
+    scope("FILE", "au")
+    val parser = new Lexer(scope)
+    val tokens = parser.splitLineToTokens(line)
+    tokens.head should be ("echo")
+    tokens(1) should be ("au x")
+    tokens.length should be(2)
+  }
+
+  "A parser" should "also substitute values inside "
 }

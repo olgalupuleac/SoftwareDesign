@@ -1,95 +1,76 @@
 package ru.spbau.lupuleac.cli
 import scala.collection.mutable.ListBuffer
 
+trait Token
+
+case class VarName(value : String) extends Token
+
+case class Plain(value : String) extends Token
+
+case class NotFinished() extends Token
 
 trait LexerAction {
-  val token : String
-  def processChar(c : Char) : (Boolean, LexerAction)
+  val buffer : String
+  def apply(c : Char) : (Token, LexerAction)
 }
 
-case class ReadingSingleQuoted(token: String) extends LexerAction {
-  override def processChar(c : Char) : (Boolean, LexerAction) = {
+case class SingleQuoted(buffer : String) extends LexerAction {
+  override def apply(c : Char) : (Token, LexerAction) = {
     c match {
-      case '\'' => (true, ReadingSimple(""))
-      case _ => (false, ReadingSingleQuoted(token + c))
+      case '\'' => (Plain(buffer), Simple(""))
+      case _ => (NotFinished(), SingleQuoted(buffer + c))
     }
   }
 }
 
 
-case class ReadingDoubleQuoted(token: String) extends LexerAction {
-  override def processChar(c : Char) : (Boolean, LexerAction) = {
+case class DoubleQuoted(buffer : String) extends LexerAction {
+  override def apply(c : Char) : (Token, LexerAction) = {
     c match {
-      case '\"' => (true, ReadingSimple(""))
-      case '$' => (false, ReadingVarCall(this, ""))
-      case _ => (false, ReadingDoubleQuoted(token + c))
+      case '\"' => (Plain(buffer), Simple(""))
+      case '$' => (Plain(buffer), VarCall(DoubleQuoted(""), ""))
+      case _ => (NotFinished(), DoubleQuoted(buffer + c))
     }
   }
 }
 
-case class ReadingVarCall(parent : LexerAction, token : String) extends LexerAction {
-  override def processChar(c : Char) : (Boolean, LexerAction) = {
-    c match {
-      case ' ' => (true, parent)
-      case _ => (false, ReadingVarCall(parent, token + c))
+case class VarCall(parent : LexerAction, buffer : String) extends LexerAction {
+  override def apply(c : Char) : (Token, LexerAction) = {
+    val stopRegex = "(\\||\\s|\"|\')"
+    if (c.toString matches stopRegex) {
+      (VarName(buffer), parent(c)._2)
+    } else {
+      (NotFinished(), VarCall(parent, buffer + c))
     }
   }
 }
 
-
-case class ReadingSimple(token: String) extends LexerAction {
-  override def processChar(c : Char) : (Boolean, LexerAction) = {
+case class Simple(buffer: String) extends LexerAction {
+  override def apply(c : Char) : (Token, LexerAction) = {
     c match {
-      case ' ' => (true, ProcessToken(""))
-      case '|' => (true, ProcessToken("|"))
-      case '\'' => (true, ReadingSingleQuoted(""))
-      case  '\"' => (true, ReadingDoubleQuoted(""))
-      case '$' => (false, ReadingVarCall(this, ""))
-      case _ => (false, ReadingSimple(token + c))
+      case ' ' => (Plain(buffer + "\n"), Simple(""))
+      case '|' => (Plain(buffer + "\n|\n"), Simple(""))
+      case '\'' => (Plain(buffer), SingleQuoted(""))
+      case  '\"' => (Plain(buffer), DoubleQuoted(""))
+      case '$' => (Plain(buffer), VarCall(Simple(""), ""))
+      case _ => (NotFinished(), Simple(buffer + c))
     }
   }
 }
-
-case class ProcessToken(token : String) extends LexerAction {
-  override def processChar(c: Char): (Boolean, LexerAction) = (true, ReadingSimple(""))
-}
-
 
 class Lexer(scope : Scope) {
-  def getToken(action: LexerAction) : String = action match {
-    case ReadingVarCall(_, varName) => scope(varName)
-    case _ => action.token
-  }
-
-  def splitLineToTokens(line : String) : List[String] = {
-    var res = new ListBuffer[String]()
-    var action = ReadingSimple("") : LexerAction
-    var curToken = ""
-    for(c <- line) {
-      val (addToToken, newAction) = action.processChar(c)
-      if (addToToken) {
-        val token = getToken(action)
-        curToken += token
-      }
-      newAction match {
-        case ProcessToken("") =>
-          if (curToken != "") {
-            res += curToken
-          }
-          curToken = ""
-          action = ReadingSimple("")
-        case ProcessToken("|") =>
-          if (curToken != "") {
-            res += curToken
-          }
-          res += "|"
-          curToken = ""
-          action = ReadingSimple("")
-        case _ => action = newAction
+  def splitLineToTokens(line : String) : Array[String] = {
+    var action  = Simple("") : LexerAction
+    var tokens = ListBuffer[String]()
+    for (c <- line + " ") {
+      val (token, newAction) = action(c)
+      action = newAction
+      token match {
+        case NotFinished() =>
+        case VarName(name) => tokens += scope(name)
+        case Plain(text) => tokens += text
       }
     }
-    curToken += getToken(action)
-    res += curToken
-    res.toList
+    tokens.toList.mkString("").split("[\n]+")
   }
 }
