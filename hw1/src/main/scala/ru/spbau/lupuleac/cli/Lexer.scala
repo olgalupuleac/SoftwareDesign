@@ -1,25 +1,25 @@
 package ru.spbau.lupuleac.cli
-import java.util
 
 import scala.collection.mutable.ListBuffer
 
 sealed trait Token
 
-case class VarName(value : String) extends Token
+case class VarName(value: String) extends Token
 
-case class Plain(value : String) extends Token
+case class Plain(value: String) extends Token
 
 case class NotFinished() extends Token
 
 case class Pipe() extends Token
 
 trait LexerAction {
-  val buffer : String
-  def apply(c : Char) : (Token, LexerAction)
+  val buffer: String
+
+  def apply(c: Char): (Token, LexerAction)
 }
 
-case class SingleQuoted(buffer : String) extends LexerAction {
-  override def apply(c : Char) : (Token, LexerAction) = {
+case class SingleQuoted(buffer: String) extends LexerAction {
+  override def apply(c: Char): (Token, LexerAction) = {
     c match {
       case '\'' => (Plain(buffer), Simple(""))
       case _ => (NotFinished(), SingleQuoted(buffer + c))
@@ -28,8 +28,8 @@ case class SingleQuoted(buffer : String) extends LexerAction {
 }
 
 
-case class DoubleQuoted(buffer : String) extends LexerAction {
-  override def apply(c : Char) : (Token, LexerAction) = {
+case class DoubleQuoted(buffer: String) extends LexerAction {
+  override def apply(c: Char): (Token, LexerAction) = {
     c match {
       case '\"' => (Plain(buffer), Simple(""))
       case '$' => (Plain(buffer), VarCall(DoubleQuoted(""), ""))
@@ -38,8 +38,8 @@ case class DoubleQuoted(buffer : String) extends LexerAction {
   }
 }
 
-case class VarCall(parent : LexerAction, buffer : String) extends LexerAction {
-  override def apply(c : Char) : (Token, LexerAction) = {
+case class VarCall(parent: LexerAction, buffer: String) extends LexerAction {
+  override def apply(c: Char): (Token, LexerAction) = {
     val stopRegex = "(\\s|\"|\')"
     if (c.toString matches stopRegex) {
       (VarName(buffer), parent(c)._2)
@@ -50,12 +50,12 @@ case class VarCall(parent : LexerAction, buffer : String) extends LexerAction {
 }
 
 case class Simple(buffer: String) extends LexerAction {
-  override def apply(c : Char) : (Token, LexerAction) = {
+  override def apply(c: Char): (Token, LexerAction) = {
     c match {
       case ' ' => (NotFinished(), Simple(buffer + "\n"))
       case '|' => (Plain(buffer + "\n"), Terminate())
       case '\'' => (Plain(buffer), SingleQuoted(""))
-      case  '\"' => (Plain(buffer), DoubleQuoted(""))
+      case '\"' => (Plain(buffer), DoubleQuoted(""))
       case '$' => (Plain(buffer), VarCall(Simple(""), ""))
       case _ => (NotFinished(), Simple(buffer + c))
     }
@@ -64,12 +64,13 @@ case class Simple(buffer: String) extends LexerAction {
 
 case class Terminate() extends LexerAction {
   override val buffer: String = ""
-  override def apply(c : Char) : (Token, LexerAction) = (Pipe(), Simple("")(c)._2)
+
+  override def apply(c: Char): (Token, LexerAction) = (Pipe(), Simple("")(c)._2)
 }
 
-class Lexer(scope : Scope) {
-  def splitLineToTokens(line : String) : List[Array[String]] = {
-    var action  = Simple("") : LexerAction
+class Lexer(scope: Scope) {
+  def splitLineToTokens(line: String): List[Array[String]] = {
+    var action = Simple(""): LexerAction
     var splitByPipe = ListBuffer[Array[String]]()
     var tokens = ListBuffer[String]()
     for (c <- line + "| ") {

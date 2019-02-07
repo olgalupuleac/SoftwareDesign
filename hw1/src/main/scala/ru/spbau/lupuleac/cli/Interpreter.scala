@@ -5,7 +5,7 @@ class Interpreter {
   private val scope = new Scope()
   private val args = collection.mutable.MutableList[Argument]()
 
-  def processAssignment(token : String) : Boolean = {
+  def processAssignment(token: String): Boolean = {
     if (!(token matches ".*=.*")) {
       return false
     }
@@ -16,13 +16,13 @@ class Interpreter {
   }
 
 
-  def apply(line : String): Output = {
+  def apply(line: String): Output = {
     val lexer = new Lexer(scope)
     val listsOfTokens = lexer.splitLineToTokens(line)
     var res = new Output("")
     for (tokens <- listsOfTokens) {
       var assignment = true
-      var command = null : Command
+      var command = null: Command
       for (token <- tokens) {
         if (assignment) {
           assignment = processAssignment(token)
@@ -34,7 +34,7 @@ class Interpreter {
         }
       }
       if (command != null) {
-        res = command(args:_*)
+        res = command(args: _*)
         args.clear()
         args += res
       }
