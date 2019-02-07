@@ -1,13 +1,17 @@
 package ru.spbau.lupuleac.cli
+import java.util
+
 import scala.collection.mutable.ListBuffer
 
-trait Token
+sealed trait Token
 
 case class VarName(value : String) extends Token
 
 case class Plain(value : String) extends Token
 
 case class NotFinished() extends Token
+
+case class Pipe() extends Token
 
 trait LexerAction {
   val buffer : String
@@ -36,7 +40,7 @@ case class DoubleQuoted(buffer : String) extends LexerAction {
 
 case class VarCall(parent : LexerAction, buffer : String) extends LexerAction {
   override def apply(c : Char) : (Token, LexerAction) = {
-    val stopRegex = "(\\||\\s|\"|\')"
+    val stopRegex = "(\\s|\"|\')"
     if (c.toString matches stopRegex) {
       (VarName(buffer), parent(c)._2)
     } else {
@@ -49,7 +53,7 @@ case class Simple(buffer: String) extends LexerAction {
   override def apply(c : Char) : (Token, LexerAction) = {
     c match {
       case ' ' => (Plain(buffer + "\n"), Simple(""))
-      case '|' => (Plain(buffer + "\n|\n"), Simple(""))
+      case '|' => (Plain(buffer + "\n"), Terminate())
       case '\'' => (Plain(buffer), SingleQuoted(""))
       case  '\"' => (Plain(buffer), DoubleQuoted(""))
       case '$' => (Plain(buffer), VarCall(Simple(""), ""))
@@ -58,19 +62,28 @@ case class Simple(buffer: String) extends LexerAction {
   }
 }
 
+case class Terminate() extends LexerAction {
+  override val buffer: String = ""
+  override def apply(c : Char) : (Token, LexerAction) = (Pipe(), Simple("")(c)._2)
+}
+
 class Lexer(scope : Scope) {
-  def splitLineToTokens(line : String) : Array[String] = {
+  def splitLineToTokens(line : String) : List[Array[String]] = {
     var action  = Simple("") : LexerAction
+    var splitByPipe = ListBuffer[Array[String]]()
     var tokens = ListBuffer[String]()
-    for (c <- line + " ") {
+    for (c <- line + "| ") {
       val (token, newAction) = action(c)
       action = newAction
       token match {
         case NotFinished() =>
         case VarName(name) => tokens += scope(name)
         case Plain(text) => tokens += text
+        case Pipe() =>
+          splitByPipe += tokens.toList.mkString("").split("[\n]+")
+          tokens.clear()
       }
     }
-    tokens.toList.mkString("").split("[\n]+")
+    splitByPipe.toList
   }
 }

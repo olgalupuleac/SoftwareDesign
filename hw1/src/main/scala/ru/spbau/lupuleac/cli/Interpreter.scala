@@ -1,79 +1,45 @@
 package ru.spbau.lupuleac.cli
 
 
-trait InterpreterAction {
-  def nextAction(str : String) : InterpreterAction
-}
-
-case object ExecuteAction extends InterpreterAction {
-  override def nextAction(str: String): InterpreterAction = if (str contains "=") {
-    AssignmentAction
-  } else {
-    CommandAction
-  }
-}
-
-case object AssignmentAction extends InterpreterAction {
-  override def nextAction(str: String): InterpreterAction = if (str contains "=") {
-    AssignmentAction
-  } else {
-    if (str == "|") {
-      ExecuteAction
-    }
-    CommandAction
-  }
-}
-
-case object CommandAction extends InterpreterAction {
-  override def nextAction(str: String): InterpreterAction = if(str == "|") {
-    ExecuteAction
-  } else {
-    ArgumentAction
-  }
-}
-
-case object ArgumentAction extends InterpreterAction {
-  override def nextAction(str: String): InterpreterAction = if(str == "|") {
-    ExecuteAction
-  } else {
-    ArgumentAction
-  }
-}
-
-
 class Interpreter {
   private val scope = new Scope()
-  private var curCommand = null : Command
   private val args = collection.mutable.MutableList[Argument]()
 
-  def processLine(line : String): Unit = {
-    val lexer = new Lexer(scope)
-    val tokens = lexer.splitLineToTokens(line)
-    if (tokens.isEmpty) {
-      return
+  def processAssignment(token : String) : Boolean = {
+    if (!(token matches ".*=.*")) {
+      return false
     }
-    var action = ExecuteAction.nextAction(tokens.head)
-    for (token <- tokens) {
-      apply(action, token)
-      action.nextAction(token)
-    }
+    val leftAndRight = token.split("=", 2)
+    assert(leftAndRight.length == 2)
+    scope(leftAndRight.head, leftAndRight(1))
+    true
   }
 
-  def apply(action: InterpreterAction, str : String) {
-    action match {
-      case AssignmentAction =>
-        val leftAndRight = str.split("=")
-        if (leftAndRight.length > 2) {
-          throw new RuntimeException("Cannot parse")
+
+  def apply(line : String): Output = {
+    val lexer = new Lexer(scope)
+    val listsOfTokens = lexer.splitLineToTokens(line)
+    var res = new Output("")
+    for (tokens <- listsOfTokens) {
+      var assignment = true
+      var command = null : Command
+      for (token <- tokens) {
+        if (assignment) {
+          assignment = processAssignment(token)
+          if (!assignment) {
+            command = Command(token)
+          }
+        } else {
+          args += CommandLineArgument(token)
         }
-        scope(leftAndRight(0), leftAndRight(1))
-      case CommandAction => curCommand = Command(str)
-      case ArgumentAction => args += CommandLineArgument(str)
-      case ExecuteAction =>
-        val output = curCommand.execute(args:_*)
-        curCommand = null
+      }
+      if (command != null) {
+        res = command(args:_*)
         args.clear()
-        args += output
+        args += res
+      }
     }
+    res
   }
+
 }
