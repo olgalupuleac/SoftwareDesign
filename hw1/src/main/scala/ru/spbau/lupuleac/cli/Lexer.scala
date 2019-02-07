@@ -52,7 +52,7 @@ case class VarCall(parent : LexerAction, buffer : String) extends LexerAction {
 case class Simple(buffer: String) extends LexerAction {
   override def apply(c : Char) : (Token, LexerAction) = {
     c match {
-      case ' ' => (Plain(buffer + "\n"), Simple(""))
+      case ' ' => (NotFinished(), Simple(buffer + "\n"))
       case '|' => (Plain(buffer + "\n"), Terminate())
       case '\'' => (Plain(buffer), SingleQuoted(""))
       case  '\"' => (Plain(buffer), DoubleQuoted(""))

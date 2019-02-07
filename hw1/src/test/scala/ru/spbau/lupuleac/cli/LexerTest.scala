@@ -2,7 +2,7 @@ package ru.spbau.lupuleac.cli
 import org.scalatest._
 
 class LexerTest extends FlatSpec with Matchers {
-  "A Parser" should "split to words a line without quotes" in {
+  "A lexer" should "split to words a line without quotes" in {
     val line = "Hello new    world"
     val parser = new Lexer(new Scope())
     val splitByPipe = parser.splitLineToTokens(line)
@@ -12,7 +12,7 @@ class LexerTest extends FlatSpec with Matchers {
     words(2) should be ("world")
   }
 
-  "A parser" should "ignore the arguments in quotes" in {
+  "A lexer" should "ignore the arguments in quotes" in {
     val line = "Hello 'new k'  \" my name \" world"
     val parser = new Lexer(new Scope())
     val tokens = parser.splitLineToTokens(line).head
@@ -23,7 +23,7 @@ class LexerTest extends FlatSpec with Matchers {
     tokens(3) should be ("world")
   }
 
-  "A parser" should "also ignore quotes inside quotes" in {
+  "A lexer" should "also ignore quotes inside quotes" in {
     val line = "Hello 'new k  \" my name \" world'"
     val parser = new Lexer(new Scope())
     val tokens = parser.splitLineToTokens(line).head
@@ -32,7 +32,7 @@ class LexerTest extends FlatSpec with Matchers {
     tokens(1) should be ("new k  \" my name \" world")
   }
 
-  "A parser" should "also parse several quoted tokens as one" in {
+  "A lexer" should "also parse several quoted tokens as one" in {
     val line = "e'c'\"h\"o"
     val parser = new Lexer(new Scope())
     val tokens = parser.splitLineToTokens(line).head
@@ -40,7 +40,7 @@ class LexerTest extends FlatSpec with Matchers {
     tokens.length should be(1)
   }
 
-  "A parser" should "substitute variables correctly" in {
+  "A lexer" should "substitute variables correctly" in {
     val line = "echo \"$FILE x\""
     val scope = new Scope()
     scope("FILE", "au")
