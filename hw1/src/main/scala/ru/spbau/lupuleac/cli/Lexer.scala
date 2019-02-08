@@ -40,7 +40,7 @@ case class DoubleQuoted(buffer: String) extends LexerAction {
 
 case class VarCall(parent: LexerAction, buffer: String) extends LexerAction {
   override def apply(c: Char): (Token, LexerAction) = {
-    val stopRegex = "(\\s|\"|\')"
+    val stopRegex = "(\\s|\"|\'|\\|)"
     if (c.toString matches stopRegex) {
       (VarName(buffer), parent(c)._2)
     } else {
