@@ -2,6 +2,7 @@ package ru.spbau.lupuleac.cli
 
 import scala.collection.mutable.ListBuffer
 
+
 sealed trait Token
 
 case class VarName(value: String) extends Token
