@@ -31,5 +31,14 @@ class InterpreterTest extends FlatSpec with Matchers {
     interpreter("cat src/test/resources/a.txt | echo") should be("")
   }
 
+  "Interpreter" should "be able to deal with this trash" in {
+    val interpreter = new Interpreter()
+    interpreter("x=ho")
+    interpreter("e'c'\"$x\" a") should be ("a")
+  }
 
+  "Interpreter" should "treat words in double quotes as one argument" in {
+    val interpreter = new Interpreter()
+    interpreter("echo \"my    world\"     is") should be("my    world is")
+  }
 }
