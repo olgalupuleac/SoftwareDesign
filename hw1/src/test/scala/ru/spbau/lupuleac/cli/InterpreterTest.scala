@@ -18,12 +18,12 @@ class InterpreterTest extends FlatSpec with Matchers {
 
   "Interpreter" should "pass result as stdin to pipe" in {
     val interpreter = new Interpreter()
-    interpreter("echo au | wc") should be("1 1 2\n1 1 2 total")
+    interpreter("echo au | wc") should be("1 1 2")
   }
 
   "Interpreter" should "read file contents and pass it to next command" in {
     val interpreter = new Interpreter()
-    interpreter("cat src/test/resources/a.txt | wc") should be("1 2 11\n1 2 11 total")
+    interpreter("cat src/test/resources/a.txt | wc") should be("1 2 11")
   }
 
   "Interpreter" should "pass stdin to echo and return empty string" in {
