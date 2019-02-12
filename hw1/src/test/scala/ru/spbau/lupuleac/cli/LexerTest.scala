@@ -63,5 +63,4 @@ class LexerTest extends FlatSpec with Matchers {
     tokens.head.foreach(x => println(x))
     tokens(1).foreach(x => println(x))
   }
-
 }

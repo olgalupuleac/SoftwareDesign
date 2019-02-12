@@ -3,6 +3,7 @@ package ru.spbau.lupuleac.cli
 import scala.io.StdIn
 
 object Main {
+
   /**
     * The console interpreter itself
     *
@@ -16,3 +17,6 @@ object Main {
     }
   }
 }
+
+import org.rogach.scallop._
+

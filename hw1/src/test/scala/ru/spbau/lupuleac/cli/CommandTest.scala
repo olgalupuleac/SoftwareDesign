@@ -18,4 +18,9 @@ class CommandTest extends FlatSpec with Matchers {
   "Cat command" should "print file content" in {
    CatCommand()(CommandLineArgument("src/test/resources/a.txt")).asFile should be("hello world")
   }
+
+  "Grep config" should "evaluate arguments in this case correctly" in {
+    val conf = GrepConf(List("-i", "-A 5", "[a]*", "file1", "file2"))
+    conf.afterContext should be (Some(5))
+  }
 }
