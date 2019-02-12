@@ -48,8 +48,9 @@ trait LexerAction {
 }
 
 /**
+  * Reading a part of the line in single quotes
   *
-  * @param buffer
+  * @param buffer is a string to which represents a current value of token
   */
 case class SingleQuoted(buffer: String) extends LexerAction {
   override def apply(c: Char): (Token, LexerAction) = {
@@ -61,8 +62,9 @@ case class SingleQuoted(buffer: String) extends LexerAction {
 }
 
 /**
+  * Reading a part of the line in double quotes
   *
-  * @param buffer
+  * @param buffer is a string to which represents a current value of token
   */
 case class DoubleQuoted(buffer: String) extends LexerAction {
   override def apply(c: Char): (Token, LexerAction) = {
@@ -75,9 +77,10 @@ case class DoubleQuoted(buffer: String) extends LexerAction {
 }
 
 /**
+  * Reading an environment variable name.
   *
-  * @param parent
-  * @param buffer
+  * @param parent is a mode which was before the beginning of the name (it could be DoubleQuoted or Simple)
+  * @param buffer is a string to which represents a current value of token
   */
 case class VarCall(parent: LexerAction, buffer: String) extends LexerAction {
   override def apply(c: Char): (Token, LexerAction) = {
@@ -91,8 +94,9 @@ case class VarCall(parent: LexerAction, buffer: String) extends LexerAction {
 }
 
 /**
+  * Reading a part of the line without quotes
   *
-  * @param buffer
+  * @param buffer is a string to which represents a current value of token
   */
 case class Simple(buffer: String) extends LexerAction {
   override def apply(c: Char): (Token, LexerAction) = {
@@ -108,23 +112,30 @@ case class Simple(buffer: String) extends LexerAction {
 }
 
 /**
-  *
+  * It goes after pipe.
   */
 case class Terminate() extends LexerAction {
   override val buffer: String = ""
 
+  /**
+    * Consuming a character it returns a pipe and a simple state which consumed this character.
+    *
+    * @param c is a char
+    * @return token and next state
+    */
   override def apply(c: Char): (Token, LexerAction) = (Pipe(), Simple("")(c)._2)
 }
 
 /**
+  * Class which takes a string and splits it by tokens.
   *
-  * @param scope
+  * @param scope is a scope from which an environment variables will be taken.
   */
 class Lexer(scope: Scope) {
   /**
-    * 
-    * @param line
-    * @return
+    *
+    * @param line is a line to be split
+    * @return list of arrays of token, in the outer list elements are split by pipes.
     */
   def splitLineToTokens(line: String): List[Array[String]] = {
     var action = Simple(""): LexerAction
