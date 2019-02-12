@@ -2,6 +2,7 @@ package ru.spbau.lupuleac.cli
 
 import scala.io.Source
 import scala.sys.process._
+import org.rogach.scallop._
 
 /**
   * A output of the command.
@@ -111,8 +112,6 @@ case class ProcessCommand(command: String, output: Output) extends Command {
 }
 
 
-import org.rogach.scallop._
-
 case class GrepConf(arguments: Seq[String]) extends ScallopConf(arguments) {
   val ignoreCase: ScallopOption[Boolean] = toggle(name = "ignore-case", default = Some(false), descrYes = "Ignore case distinctions in both the PATTERN and the input files.")
   val wordRegex: ScallopOption[Boolean] = toggle(name = "word-regexp", default = Some(false), descrYes = "Select only those lines containing matches that form whole words.\n" +
@@ -124,12 +123,19 @@ case class GrepConf(arguments: Seq[String]) extends ScallopConf(arguments) {
   } catch {
     case _: Exception => false
   })
-  val files: ScallopOption[List[String]] = trailArg[List[String]]()
+  val files: ScallopOption[List[String]] = trailArg[List[String]](required = false)
   verify()
 }
 
-case class GrepCommand() extends Command {
+case class GrepCommand(output: Output) extends Command {
 
+  override def apply(arguments: String*): Output = {
+    val conf = GrepConf(arguments)
+    if (conf.files.isEmpty) {
+
+    }
+    output
+  }
 }
 
 /**

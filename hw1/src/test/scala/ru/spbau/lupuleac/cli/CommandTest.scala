@@ -19,7 +19,11 @@ class CommandTest extends FlatSpec with Matchers {
   }
 
   "Grep config" should "evaluate arguments in this case correctly" in {
-    val conf = GrepConf(List("-i", "-A 5", "[a]*", "file1", "file2"))
-    conf.afterContext should be (Some(5))
+    val conf = GrepConf(List("-i", "-A", "5", "[a]*", "file1", "file2"))
+    conf.afterContext() should equal (5)
+    conf.ignoreCase() should equal (true)
+    conf.wordRegex() should equal (false)
+    conf.pattern() should equal ("[a]*")
+    conf.files() should equal (List("file1", "file2"))
   }
 }
