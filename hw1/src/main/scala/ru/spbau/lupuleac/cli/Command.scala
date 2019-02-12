@@ -30,7 +30,7 @@ case class WcCommand() extends Command {
     val totalLines = list.foldLeft(0)((x: Int, y: (Int, Int, Int, String)) => x + y._1)
     val totalWords = list.foldLeft(0)((x: Int, y: (Int, Int, Int, String)) => x + y._2)
     val totalBytes = list.foldLeft(0)((x: Int, y: (Int, Int, Int, String)) => x + y._3)
-    val res = list.map(x => List(x._1.toString, x._2.toString, x._3.toString, x._4).mkString(" "))
+    val res = list.map(x => List(x._1.toString, x._2.toString, x._3.toString, x._4).mkString(" ").trim)
     val total = List(totalLines, totalWords, totalBytes).map(x => x.toString).mkString(" ") + " total"
     Output((res :+ total).mkString("\n"))
   }
@@ -71,7 +71,7 @@ case class ProcessCommand(command: String) extends Command {
   override def apply(arguments: Argument*): Output = {
     val args = arguments.map(x => x.asString).mkString(" ")
     val sysCommand = command + " " + args
-    Output(sysCommand !!)
+    Output(Process(sysCommand) !!)
   }
 }
 

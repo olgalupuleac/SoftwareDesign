@@ -29,7 +29,7 @@ class Interpreter {
     * @param line is a line to be executed
     * @return the output, which should be printed
     */
-  def apply(line: String): Output = {
+  def apply(line: String): String = {
     val lexer = new Lexer(scope)
     val listsOfTokens = lexer.splitLineToTokens(line)
     var res = Output("")
@@ -52,7 +52,6 @@ class Interpreter {
         args += res
       }
     }
-    res
+    res.asFile
   }
-
 }

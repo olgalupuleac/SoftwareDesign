@@ -56,4 +56,12 @@ class LexerTest extends FlatSpec with Matchers {
     tokens(1) should be (List("c"))
   }
 
+  "A lexer" should "split string by pipes" in {
+    val scope = new Scope()
+    val lexer = new Lexer(scope)
+    val tokens = lexer.splitLineToTokens("echo au | wc")
+    tokens.head.foreach(x => println(x))
+    tokens(1).foreach(x => println(x))
+  }
+
 }
