@@ -5,7 +5,7 @@ package ru.spbau.lupuleac.cli
   **/
 class Interpreter {
   private val scope = new Scope()
-  private val args = collection.mutable.MutableList[Argument]()
+  private val args = collection.mutable.MutableList[String]()
 
   /**
     * Checks if the token can be parsed as an assignment (e.g. x=1). If true, parses it and saves the result in scope.
@@ -40,18 +40,17 @@ class Interpreter {
         if (assignment) {
           assignment = processAssignment(token)
           if (!assignment) {
-            command = Command(token)
+            command = Command(token, res)
           }
         } else {
-          args += CommandLineArgument(token)
+          args += token
         }
       }
       if (command != null) {
         res = command(args: _*)
         args.clear()
-        args += res
       }
     }
-    res.asFile
+    res.text
   }
 }
