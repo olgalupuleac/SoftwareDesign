@@ -31,7 +31,7 @@ case class Pipe() extends Token
 /**
   * Represents a state in finite-state machine used for parsing a string.
   */
-trait LexerAction {
+sealed trait LexerAction {
   /**
     * Current string which we had during parsing.
     * New string is created when token is finished
