@@ -13,6 +13,7 @@ case class Output(text: String)
 
 /**
   * Command in interpreter.
+  * Output is an output of the previous command
   */
 trait Command {
   val output: Output
@@ -23,6 +24,9 @@ trait Command {
   def apply(arguments: String*): Output
 }
 
+/**
+  * Takes the file name and returns its contents.
+  */
 object File {
   def apply(str: String): String = {
     val file = Source.fromFile(str)
@@ -107,7 +111,7 @@ case class ProcessCommand(command: String, output: Output) extends Command {
 }
 
 /**
-  * Takes a string and returns a command which corresponds to this string.
+  * Takes a string and the output of the previous command and returns a command which corresponds to this string.
   */
 object Command {
   def apply(name: String, output: Output): Command = name match {
