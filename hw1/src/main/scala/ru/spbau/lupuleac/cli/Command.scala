@@ -131,7 +131,6 @@ case class GrepConf(arguments: Seq[String]) extends ScallopConf(arguments) {
 }
 
 case class GrepCommand(output: Output) extends Command {
-
   def matchWord(pattern: Regex, line: String): Boolean = {
     val mi = pattern.findAllIn(line)
     while (mi.hasNext) {
@@ -189,6 +188,7 @@ object Command {
     case "wc" => WcCommand(output)
     case "exit" => ExitCommand(output)
     case "cat" => CatCommand(output)
+    case "grep" => GrepCommand(output)
     case _@t => ProcessCommand(t, output)
   }
 }

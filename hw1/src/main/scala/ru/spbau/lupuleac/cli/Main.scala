@@ -18,5 +18,4 @@ object Main {
   }
 }
 
-import org.rogach.scallop._
 

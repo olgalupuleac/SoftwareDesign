@@ -35,19 +35,19 @@ class Interpreter {
     var res = Output("")
     for (tokens <- listsOfTokens) {
       var assignment = true
-      var command = null: Command
+      var command = None : Option[Command]
       for (token <- tokens) {
         if (assignment) {
           assignment = processAssignment(token)
           if (!assignment) {
-            command = Command(token, res)
+            command = Some(Command(token, res))
           }
         } else {
           args += token
         }
       }
-      if (command != null) {
-        res = command(args: _*)
+      if (command.isDefined) {
+        res = command.get(args: _*)
         args.clear()
       }
     }

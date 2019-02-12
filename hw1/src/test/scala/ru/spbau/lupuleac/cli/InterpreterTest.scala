@@ -41,4 +41,9 @@ class InterpreterTest extends FlatSpec with Matchers {
     val interpreter = new Interpreter()
     interpreter("echo \"my    world\"     is") should be("my    world is")
   }
+
+  "Interpreter" should "execute grep correctly" in {
+    val interpreter = new Interpreter()
+    interpreter("echo AAA | grep -i a") should be("AAA")
+  }
 }
