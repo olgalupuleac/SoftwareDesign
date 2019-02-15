@@ -1,11 +1,12 @@
 package ru.spbau.lupuleac.cli
 
+import ru.spbau.lupuleac.cli.commands.CommandFactory
+
 /**
   * Class, which takes line one by one and returns the output for each command.
   **/
 class Interpreter {
   private val scope = new Scope()
-  private val args = collection.mutable.MutableList[String]()
 
   /**
     * Checks if the token can be parsed as an assignment (e.g. x=1). If true, parses it and saves the result in scope.
@@ -30,27 +31,30 @@ class Interpreter {
     * @return the output, which should be printed
     */
   def apply(line: String): String = {
-    val lexer = new Lexer(scope)
+    val lexer = new Parser(scope)
     val listsOfTokens = lexer.splitLineToTokens(line)
-    var res = Output("")
+    var res = None: Option[String]
     for (tokens <- listsOfTokens) {
       var assignment = true
-      var command = null: Command
+      var commandName = None: Option[String]
+      val args = collection.mutable.ListBuffer[String]()
       for (token <- tokens) {
         if (assignment) {
           assignment = processAssignment(token)
           if (!assignment) {
-            command = Command(token, res)
+            commandName = Some(token)
           }
         } else {
           args += token
         }
       }
-      if (command != null) {
-        res = command(args: _*)
+      if (commandName.isDefined) {
+        val command = CommandFactory(commandName.get, res, args.toList)
+        val out = command()
+        res = Some(out)
         args.clear()
       }
     }
-    res.text
+    res.getOrElse("")
   }
 }
