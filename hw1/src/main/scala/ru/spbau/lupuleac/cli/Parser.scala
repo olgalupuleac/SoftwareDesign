@@ -31,7 +31,7 @@ case class Pipe() extends Token
 /**
   * Represents a state in finite-state machine used for parsing a string.
   */
-sealed trait LexerAction {
+sealed trait ParserAction {
   /**
     * Current string which we had during parsing.
     * New string is created when token is finished
@@ -44,7 +44,7 @@ sealed trait LexerAction {
     * @param c is a char
     * @return token and next state
     */
-  def apply(c: Char): (Token, LexerAction)
+  def apply(c: Char): (Token, ParserAction)
 }
 
 /**
@@ -52,8 +52,8 @@ sealed trait LexerAction {
   *
   * @param buffer is a string to which represents a current value of token
   */
-case class SingleQuoted(buffer: String) extends LexerAction {
-  override def apply(c: Char): (Token, LexerAction) = {
+case class SingleQuoted(buffer: String) extends ParserAction {
+  override def apply(c: Char): (Token, ParserAction) = {
     c match {
       case '\'' => (Plain(buffer), Simple(""))
       case _ => (NotFinished(), SingleQuoted(buffer + c))
@@ -66,8 +66,8 @@ case class SingleQuoted(buffer: String) extends LexerAction {
   *
   * @param buffer is a string to which represents a current value of token
   */
-case class DoubleQuoted(buffer: String) extends LexerAction {
-  override def apply(c: Char): (Token, LexerAction) = {
+case class DoubleQuoted(buffer: String) extends ParserAction {
+  override def apply(c: Char): (Token, ParserAction) = {
     c match {
       case '\"' => (Plain(buffer), Simple(""))
       case '$' => (Plain(buffer), VarCall(DoubleQuoted(""), ""))
@@ -82,9 +82,9 @@ case class DoubleQuoted(buffer: String) extends LexerAction {
   * @param parent is a mode which was before the beginning of the name (it could be DoubleQuoted or Simple)
   * @param buffer is a string to which represents a current value of token
   */
-case class VarCall(parent: LexerAction, buffer: String) extends LexerAction {
-  override def apply(c: Char): (Token, LexerAction) = {
-    val stopRegex = "(\\s|\"|\'|\\|)"
+case class VarCall(parent: ParserAction, buffer: String) extends ParserAction {
+  override def apply(c: Char): (Token, ParserAction) = {
+    val stopRegex = "(\\s|\"|\'|\\||\\$)"
     if (c.toString matches stopRegex) {
       (VarName(buffer), parent(c)._2)
     } else {
@@ -98,8 +98,8 @@ case class VarCall(parent: LexerAction, buffer: String) extends LexerAction {
   *
   * @param buffer is a string to which represents a current value of token
   */
-case class Simple(buffer: String) extends LexerAction {
-  override def apply(c: Char): (Token, LexerAction) = {
+case class Simple(buffer: String) extends ParserAction {
+  override def apply(c: Char): (Token, ParserAction) = {
     c match {
       case ' ' => (NotFinished(), Simple(buffer + "\n"))
       case '|' => (Plain(buffer + "\n"), Terminate())
@@ -114,7 +114,7 @@ case class Simple(buffer: String) extends LexerAction {
 /**
   * It goes after pipe.
   */
-case class Terminate() extends LexerAction {
+case class Terminate() extends ParserAction {
   override val buffer: String = ""
 
   /**
@@ -123,7 +123,7 @@ case class Terminate() extends LexerAction {
     * @param c is a char
     * @return token and next state
     */
-  override def apply(c: Char): (Token, LexerAction) = (Pipe(), Simple("")(c)._2)
+  override def apply(c: Char): (Token, ParserAction) = (Pipe(), Simple("")(c)._2)
 }
 
 /**
@@ -131,14 +131,14 @@ case class Terminate() extends LexerAction {
   *
   * @param scope is a scope from which an environment variables will be taken.
   */
-class Lexer(scope: Scope) {
+class Parser(scope: Scope) {
   /**
     *
     * @param line is a line to be split
     * @return list of arrays of token, in the outer list elements are split by pipes.
     */
   def splitLineToTokens(line: String): List[Array[String]] = {
-    var action = Simple(""): LexerAction
+    var action = Simple(""): ParserAction
     var splitByPipe = ListBuffer[Array[String]]()
     var tokens = ListBuffer[String]()
     for (c <- line + "| ") {
