@@ -73,6 +73,7 @@ object CommandFactory {
     case "wc" => WcCommand(stdin, args)
     case "exit" => ExitCommand(stdin)
     case "cat" => CatCommand(stdin, args)
+    case "grep" => GrepCommand(stdin, args)
     case _@t => ProcessCommand(t, stdin, args)
   }
 }
