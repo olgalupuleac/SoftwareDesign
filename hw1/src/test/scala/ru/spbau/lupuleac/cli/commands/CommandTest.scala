@@ -53,4 +53,8 @@ class CommandTest extends FlatSpec with Matchers {
     res should include (List("lines", "in", "this", "file").mkString(System.lineSeparator()))
     res should not include "my"
   }
+
+  "Pwd command" should "print a current directory" in {
+    PwdCommand(EmptyInput())() should endWith ("hw1")
+  }
 }
