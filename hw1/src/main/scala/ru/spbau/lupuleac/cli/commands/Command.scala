@@ -2,6 +2,28 @@ package ru.spbau.lupuleac.cli.commands
 
 import scala.io.Source
 
+/**
+  * Trait which describes standard input, which is passed to the command.
+  */
+trait Input {
+  val isEmpty: Boolean
+  val text : String
+}
+
+/**
+  * Class which describes stdin with some text passed to the command which is preceded by pipe.
+  */
+case class Stdin(text: String) extends Input {
+  override val isEmpty: Boolean = false
+}
+
+/**
+  * Class which describes the input passed to the first command.
+  */
+case class EmptyInput() extends Input {
+  override val isEmpty: Boolean = true
+  val text = throw UnsupportedOperationException
+}
 
 /**
   * Command in interpreter.
@@ -15,7 +37,7 @@ trait Command {
   /**
     * Stdin (Some(String) if the command is preceded by pipe).
     */
-  val stdin: Option[String]
+  val stdin: Input
 
   /**
     * Arguments for a command.
@@ -67,7 +89,7 @@ object File {
   * Takes a string and the output of the previous command and returns a command which corresponds to this string.
   */
 object CommandFactory {
-  def apply(name: String, stdin: Option[String], args: List[String]): Command = name match {
+  def apply(name: String, stdin: Input, args: List[String]): Command = name match {
     case "echo" => EchoCommand(stdin, args)
     case "pwd" => PwdCommand(stdin)
     case "wc" => WcCommand(stdin, args)

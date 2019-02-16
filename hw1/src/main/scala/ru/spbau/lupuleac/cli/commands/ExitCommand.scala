@@ -3,7 +3,7 @@ package ru.spbau.lupuleac.cli.commands
 /**
   * Exits from the interpreter.
   */
-case class ExitCommand(stdin: Option[String]) extends Command {
+case class ExitCommand(stdin: Input) extends Command {
   override def execute(): String = {
     System.exit(0)
     ""
