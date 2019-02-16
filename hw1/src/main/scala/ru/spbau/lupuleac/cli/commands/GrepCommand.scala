@@ -5,7 +5,11 @@ import org.rogach.scallop.{ScallopConf, ScallopOption}
 import scala.collection.mutable
 import scala.util.matching.Regex
 
-
+/**
+  * Checks if the provided arguments are correct.
+  *
+  * @param arguments is arguments to be checked.
+  */
 case class GrepConf(arguments: Seq[String]) extends ScallopConf(arguments) {
   val ignoreCase: ScallopOption[Boolean] = toggle(name = "ignore-case", default = Some(false), descrYes = "Ignore case distinctions in both the PATTERN and the input files.")
   val wordRegex: ScallopOption[Boolean] = toggle(name = "word-regexp", default = Some(false), descrYes = "Select only those lines containing matches that form whole words.\n" +
@@ -21,6 +25,9 @@ case class GrepConf(arguments: Seq[String]) extends ScallopConf(arguments) {
   verify()
 }
 
+/**
+  * Returns lines matching the pattern.
+  **/
 case class GrepCommand(stdin: Input, arguments: List[String]) extends Command {
   private var conf: GrepConf = _
 
@@ -36,6 +43,13 @@ case class GrepCommand(stdin: Input, arguments: List[String]) extends Command {
     }
   }
 
+  /**
+    * Checks if the line contains words which match the pattern.
+    *
+    * @param pattern is a pattern which occurrences should be checked
+    * @param line    is a line to be checked
+    * @return if the line contains a word which matches the pattern.
+    */
   def matchWord(pattern: Regex, line: String): Boolean = {
     val words = line.split("[^(a-z|A-Z|0-9|_)]+")
     for (word <- words) {
@@ -46,6 +60,12 @@ case class GrepCommand(stdin: Input, arguments: List[String]) extends Command {
     false
   }
 
+  /**
+    *
+    * @param filename is a file name
+    * @param line     is a line to be printed
+    * @return a correct line to be printed in the output
+    */
   def lineToPrint(filename: String, line: String): String = if (filename == "") line else filename + ": " + line
 
   override def execute(): String = {

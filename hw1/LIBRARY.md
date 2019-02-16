@@ -5,3 +5,5 @@
 * https://github.com/jfkelley/argyle
 * http://software.clapper.org/argot/
 
+Была выбрана библиотека `scallop` из-за удобства использования и наличия всего необходимого функционала.
+
