@@ -21,10 +21,10 @@ case class GrepConf(arguments: Seq[String]) extends ScallopConf(arguments) {
   verify()
 }
 
-case class GrepCommand(stdin: Option[String], arguments: List[String]) extends Command {
+case class GrepCommand(stdin: Input, arguments: List[String]) extends Command {
   private var conf: GrepConf = _
 
-  override def validate(): Boolean = {
+  override def isValid: Boolean = {
     try {
       conf = GrepConf(arguments)
       if (conf.files.isEmpty && stdin.isEmpty) {
@@ -50,9 +50,9 @@ case class GrepCommand(stdin: Option[String], arguments: List[String]) extends C
 
   override def execute(): String = {
     val files = if (conf.files.isEmpty) {
-      List(("", stdin.get))
+      List(("", stdin.text))
     } else {
-      conf.files().map(x => (x, File(x)))
+      conf.files().map(x => (x, FileUtils(x)))
     }
     val pattern = conf.pattern().r
     val res = mutable.MutableList[String]()

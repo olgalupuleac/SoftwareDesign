@@ -8,5 +8,5 @@ case class EchoCommand(stdin: Input, arguments: List[String]) extends Command {
 
   override val name: String = "echo"
 
-  override def validate(): Boolean = true
+  override def isValid : Boolean = true
 }

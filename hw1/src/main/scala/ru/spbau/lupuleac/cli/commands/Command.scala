@@ -5,7 +5,7 @@ import scala.io.Source
 /**
   * Trait which describes standard input, which is passed to the command.
   */
-trait Input {
+sealed trait Input {
   val isEmpty: Boolean
   val text : String
 }
@@ -22,7 +22,7 @@ case class Stdin(text: String) extends Input {
   */
 case class EmptyInput() extends Input {
   override val isEmpty: Boolean = true
-  val text = throw UnsupportedOperationException
+  val text = ""
 }
 
 /**
@@ -46,10 +46,8 @@ trait Command {
 
   /**
     * Checks if the given arguments are correct.
-    *
-    * @return true if the arguments are correct
-    */
-  def validate(): Boolean
+   **/
+  def isValid : Boolean
 
   /**
     * Executes the command with it's arguments.
@@ -63,7 +61,7 @@ trait Command {
    * Executes the command if the arguments are correct.
    */
   def apply(): String = {
-    if (validate()) {
+    if (isValid) {
       execute()
     } else {
       "bash: " + name + ": invalid arguments"
@@ -75,7 +73,7 @@ trait Command {
 /**
   * Takes the file name and returns its contents.
   */
-object File {
+object FileUtils {
   def apply(str: String): String = {
     val file = Source.fromFile(str)
     val res = file.getLines.mkString("\n")
@@ -99,4 +97,3 @@ object CommandFactory {
     case _@t => ProcessCommand(t, stdin, args)
   }
 }
-

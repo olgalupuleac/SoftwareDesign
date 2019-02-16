@@ -8,7 +8,7 @@ import scala.sys.process.Process
   *
   * @param command is an unknown command to be executed
   */
-case class ProcessCommand(command: String, stdin: Option[String], arguments: List[String]) extends Command {
+case class ProcessCommand(command: String, stdin: Input, arguments: List[String]) extends Command {
   override def execute(): String = {
     val prefix = if (System.getProperty("os.name").startsWith("Win")) "cmd /c " else ""
     val args = arguments.mkString(" ")
@@ -18,5 +18,5 @@ case class ProcessCommand(command: String, stdin: Option[String], arguments: Lis
 
   override val name: String = "process"
 
-  override def validate(): Boolean = true
+  override def isValid : Boolean = true
 }

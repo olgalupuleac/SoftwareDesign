@@ -4,7 +4,7 @@ package ru.spbau.lupuleac.cli.commands
   * Returns number of lines, words and bytes in each file provided
   * as an argument and total number of lines, words and bytes.
   */
-case class WcCommand(stdin: Option[String], arguments: List[String]) extends Command {
+case class WcCommand(stdin: Input, arguments: List[String]) extends Command {
   def numberOfLines(str: String): Int = str.split("\n").length
 
   def numberOfBytes(str: String): Int = str.getBytes().length
@@ -13,9 +13,9 @@ case class WcCommand(stdin: Option[String], arguments: List[String]) extends Com
 
   override def execute(): String = {
     if (arguments.isEmpty) {
-      return List(numberOfLines(stdin.get), numberOfWords(stdin.get), numberOfBytes(stdin.get)).mkString(" ")
+      return List(numberOfLines(stdin.text), numberOfWords(stdin.text), numberOfBytes(stdin.text)).mkString(" ")
     }
-    val list = arguments.map(x => (File(x), x)).map(x => (numberOfLines(x._1), numberOfWords(x._1), numberOfBytes(x._1), x._2))
+    val list = arguments.map(x => (FileUtils(x), x)).map(x => (numberOfLines(x._1), numberOfWords(x._1), numberOfBytes(x._1), x._2))
     val totalLines = list.foldLeft(0)((x: Int, y: (Int, Int, Int, String)) => x + y._1)
     val totalWords = list.foldLeft(0)((x: Int, y: (Int, Int, Int, String)) => x + y._2)
     val totalBytes = list.foldLeft(0)((x: Int, y: (Int, Int, Int, String)) => x + y._3)
@@ -26,5 +26,5 @@ case class WcCommand(stdin: Option[String], arguments: List[String]) extends Com
 
   override val name: String = "wc"
 
-  override def validate(): Boolean = !(arguments.isEmpty && stdin.isEmpty)
+  override def isValid : Boolean = !(arguments.isEmpty && stdin.isEmpty)
 }
