@@ -48,13 +48,13 @@ class CommandTest extends FlatSpec with Matchers {
   }
 
   "Process command" should "find a string in file" in {
-    val command = if(System.getProperty("os.name").startsWith("Win")) "find \"i\" src/test/resources/several_lines" else "grep i src/test/resources/several_lines"
+    val command = if (System.getProperty("os.name").startsWith("Win")) "find \"i\" src/test/resources/several_lines" else "grep i src/test/resources/several_lines"
     val res = ProcessCommand(command, EmptyInput(), List())()
-    res should include (List("lines", "in", "this", "file").mkString(System.lineSeparator()))
+    res should include(List("lines", "in", "this", "file").mkString(System.lineSeparator()))
     res should not include "my"
   }
 
   "Pwd command" should "print a current directory" in {
-    PwdCommand(EmptyInput())() should endWith ("hw1")
+    PwdCommand(EmptyInput())() should endWith("hw1")
   }
 }

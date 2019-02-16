@@ -33,7 +33,7 @@ class Interpreter {
   def apply(line: String): String = {
     val lexer = new Parser(scope)
     val listsOfTokens = lexer.splitLineToTokens(line)
-    var input = EmptyInput() : Input
+    var input = EmptyInput(): Input
     for (tokens <- listsOfTokens) {
       var assignment = true
       var commandName = None: Option[String]

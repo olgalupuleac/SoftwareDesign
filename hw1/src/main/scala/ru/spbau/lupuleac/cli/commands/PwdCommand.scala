@@ -9,5 +9,5 @@ case class PwdCommand(stdin: Input) extends Command {
   override val name: String = "pwd"
   override val arguments: List[String] = List()
 
-  override def isValid : Boolean = true
+  override def isValid: Boolean = true
 }

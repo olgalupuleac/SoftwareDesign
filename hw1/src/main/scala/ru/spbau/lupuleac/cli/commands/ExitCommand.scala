@@ -11,7 +11,7 @@ case class ExitCommand(stdin: Input) extends Command {
 
   override val name: String = "exit"
 
-  override def isValid : Boolean = true
+  override def isValid: Boolean = true
 
   override val arguments: List[String] = List()
 }
