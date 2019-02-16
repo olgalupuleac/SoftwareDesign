@@ -26,5 +26,5 @@ case class WcCommand(stdin: Input, arguments: List[String]) extends Command {
 
   override val name: String = "wc"
 
-  override def isValid : Boolean = !(arguments.isEmpty && stdin.isEmpty)
+  override def isValid: Boolean = !(arguments.isEmpty && stdin.isEmpty)
 }

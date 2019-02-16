@@ -7,7 +7,7 @@ import scala.io.Source
   */
 sealed trait Input {
   val isEmpty: Boolean
-  val text : String
+  val text: String
 }
 
 /**
@@ -46,8 +46,8 @@ trait Command {
 
   /**
     * Checks if the given arguments are correct.
-   **/
-  def isValid : Boolean
+    **/
+  def isValid: Boolean
 
   /**
     * Executes the command with it's arguments.
