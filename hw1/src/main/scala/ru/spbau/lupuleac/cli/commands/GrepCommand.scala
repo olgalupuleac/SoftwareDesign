@@ -55,6 +55,7 @@ case class GrepCommand(stdin: Input, arguments: List[String]) extends Command {
     for (word <- words) {
       word match {
         case pattern() => return true
+        case _ =>
       }
     }
     false
@@ -66,7 +67,13 @@ case class GrepCommand(stdin: Input, arguments: List[String]) extends Command {
     * @param line     is a line to be printed
     * @return a correct line to be printed in the output
     */
-  def lineToPrint(filename: String, line: String): String = if (filename == "") line else filename + ": " + line
+  def lineToPrint(filename: String, line: String): String = if (printFileName) filename + ": " + line else line
+
+  /**
+    *
+    * @return true if the file name should be printed before every line
+    */
+  def printFileName: Boolean = conf.files.isDefined && conf.files().size > 1
 
   override def execute(): String = {
     val files = if (conf.files.isEmpty) {
@@ -74,7 +81,7 @@ case class GrepCommand(stdin: Input, arguments: List[String]) extends Command {
     } else {
       conf.files().map(x => (x, FileUtils(x)))
     }
-    val pattern = conf.pattern().r
+    val pattern = if (conf.ignoreCase()) conf.pattern().toLowerCase.r else conf.pattern().r
     val res = mutable.MutableList[String]()
     for ((filename, contents) <- files) {
       var num = 0

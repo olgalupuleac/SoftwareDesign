@@ -12,7 +12,7 @@ class CommandTest extends FlatSpec with Matchers {
   }
 
   "Wc command" should "print number of lines, words and bytes in file" in {
-    WcCommand(EmptyInput(), List("src/test/resources/a.txt"))() should be("1 2 11 src/test/resources/a.txt\n1 2 11 total")
+    WcCommand(EmptyInput(), List("src/test/resources/a.txt"))() should be("1 2 11 src/test/resources/a.txt")
   }
 
   "Wc command" should "also print total number for several files correctly" in {
@@ -24,7 +24,7 @@ class CommandTest extends FlatSpec with Matchers {
   }
 
   "Wc command" should "ignore stdin if the arguments are provided" in {
-    WcCommand(Stdin("aaa a"), List("src/test/resources/a.txt"))() should be("1 2 11 src/test/resources/a.txt\n1 2 11 total")
+    WcCommand(Stdin("aaa a"), List("src/test/resources/a.txt"))() should be("1 2 11 src/test/resources/a.txt")
   }
 
   "Wc command" should "print an error if arguments are incorrect" in {
@@ -73,5 +73,32 @@ class CommandTest extends FlatSpec with Matchers {
     conf.ignoreCase() should be(true)
     conf.wordRegex() should be(true)
     conf.files.isEmpty should be(true)
+  }
+
+  "Grep command" should "find all usages of \"and\" ignoring case here" in {
+    val res = List(
+      "I was alone and it was night",
+      "And with endearing words so silent",
+      "A million images and words, long since forgotten",
+      "And as I wandered through the night",
+      "And the present now",
+      "The husband in the war who's never coming home",
+      "... https://genius.com/Beardfish-and-the-stone-said-if-i-could-speak-lyrics"
+    ).mkString("\n")
+    GrepCommand(EmptyInput(), List("-i", "AND", "src/test/resources/AndTheStoneSaid.txt"))() should be(res)
+  }
+
+  "Grep command" should "find only lower case \"and\" words" in {
+    val res = List(
+      "I was alone and it was night",
+      "A million images and words, long since forgotten",
+      "... https://genius.com/Beardfish-and-the-stone-said-if-i-could-speak-lyrics"
+    ).mkString("\n")
+    GrepCommand(EmptyInput(), List("-w", "and", "src/test/resources/AndTheStoneSaid.txt"))() should be(res)
+  }
+
+  "Grep command" should "print file names before lines if there are several files" in {
+    val res = "src/test/resources/a.txt: hello world\n" + "src/test/resources/several_lines: lines\n" + "src/test/resources/several_lines: file"
+    GrepCommand(EmptyInput(), List("l", "src/test/resources/a.txt", "src/test/resources/several_lines"))() should be(res)
   }
 }
