@@ -1,5 +1,7 @@
 package ru.spbau.lupuleac.cli
 
+import java.nio.file.{Path, Paths}
+
 import ru.spbau.lupuleac.cli.commands.{CommandFactory, EmptyInput, Input, Stdin}
 
 /**
@@ -7,6 +9,8 @@ import ru.spbau.lupuleac.cli.commands.{CommandFactory, EmptyInput, Input, Stdin}
   **/
 class Interpreter {
   private val scope = new Scope()
+
+  var curDir : Path = Paths.get(System.getProperty("user.dir"))
 
   /**
     * Checks if the token can be parsed as an assignment (e.g. x=1). If true, parses it and saves the result in scope.
@@ -50,7 +54,7 @@ class Interpreter {
       }
       if (commandName.isDefined) {
         val command = CommandFactory(commandName.get, input, args.toList)
-        val out = command()
+        val out = command(this)
         input = Stdin(out)
         args.clear()
       }

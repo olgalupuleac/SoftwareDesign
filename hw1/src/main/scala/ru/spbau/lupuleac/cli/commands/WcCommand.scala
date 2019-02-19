@@ -1,5 +1,7 @@
 package ru.spbau.lupuleac.cli.commands
 
+import ru.spbau.lupuleac.cli.Interpreter
+
 /**
   * Returns number of lines, words and bytes in each file provided
   * as an argument and total number of lines, words and bytes.
@@ -11,7 +13,7 @@ case class WcCommand(stdin: Input, arguments: List[String]) extends Command {
 
   def numberOfWords(str: String): Int = str.split("\\s").length
 
-  override def execute(): String = {
+  override def execute(interpreter: Interpreter): String = {
     if (arguments.isEmpty) {
       return List(numberOfLines(stdin.text), numberOfWords(stdin.text), numberOfBytes(stdin.text)).mkString(" ")
     }
