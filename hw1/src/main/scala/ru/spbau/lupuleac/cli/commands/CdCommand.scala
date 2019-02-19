@@ -11,10 +11,10 @@ import ru.spbau.lupuleac.cli.Interpreter
 case class CdCommand(stdin: Input, arguments: List[String]) extends Command {
   override val name: String = "cd"
 
-  override def isValid: Boolean = arguments.nonEmpty
+  override def isValid: Boolean = true
 
   override def execute(interpreter: Interpreter): String = {
-    val targetPath : String = arguments.head
+    val targetPath : String = if (arguments.isEmpty) "/." else arguments.head
     interpreter.curDir = if (Paths.get(targetPath).isAbsolute) {
        Paths.get(targetPath)
     } else {
