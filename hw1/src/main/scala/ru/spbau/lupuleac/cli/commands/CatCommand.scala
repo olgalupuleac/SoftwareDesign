@@ -1,5 +1,7 @@
 package ru.spbau.lupuleac.cli.commands
 
+import ru.spbau.lupuleac.cli.Interpreter
+
 /**
   * Returns a file (or files) contents.
   */
@@ -8,7 +10,7 @@ case class CatCommand(stdin: Input, arguments: List[String]) extends Command {
 
   override def isValid: Boolean = !(arguments.isEmpty && stdin.isEmpty)
 
-  override def execute(): String = {
+  override def execute(interpreter: Interpreter): String = {
     if (arguments.isEmpty) {
       return stdin.text
     }

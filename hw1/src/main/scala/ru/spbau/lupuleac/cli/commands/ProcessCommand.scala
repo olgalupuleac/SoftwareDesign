@@ -1,5 +1,7 @@
 package ru.spbau.lupuleac.cli.commands
 
+import ru.spbau.lupuleac.cli.Interpreter
+
 import scala.sys.process.Process
 
 
@@ -9,7 +11,7 @@ import scala.sys.process.Process
   * @param command is an unknown command to be executed
   */
 case class ProcessCommand(command: String, stdin: Input, arguments: List[String]) extends Command {
-  override def execute(): String = {
+  override def execute(interpreter: Interpreter): String = {
     val prefix = if (System.getProperty("os.name").startsWith("Win")) "cmd /c " else ""
     val args = arguments.mkString(" ")
     val sysCommand = prefix + command + " " + args

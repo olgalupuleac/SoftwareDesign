@@ -1,5 +1,7 @@
 package ru.spbau.lupuleac.cli.commands
 
+import ru.spbau.lupuleac.cli.Interpreter
+
 import scala.io.Source
 
 /**
@@ -54,15 +56,15 @@ trait Command {
     *
     * @return the string which should be printed.
     */
-  def execute(): String
+  def execute(interpreter: Interpreter): String
 
 
   /*
    * Executes the command if the arguments are correct.
    */
-  def apply(): String = {
+  def apply(interpreter: Interpreter): String = {
     if (isValid) {
-      execute()
+      execute(interpreter)
     } else {
       "bash: " + name + ": invalid arguments"
     }
@@ -93,6 +95,8 @@ object CommandFactory {
     case "wc" => WcCommand(stdin, args)
     case "exit" => ExitCommand(stdin)
     case "cat" => CatCommand(stdin, args)
+    case "ls" => LsCommand(stdin, args)
+    case "cd" => CdCommand(stdin, args)
     case _@t => ProcessCommand(t, stdin, args)
   }
 }
