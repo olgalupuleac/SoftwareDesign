@@ -1,7 +1,7 @@
 package ru.spbau.lupuleac.cli.commands
 
 import scala.io.Source
-import scala.util.Try
+import scala.util.{Failure, Try}
 
 /**
   * Trait which describes standard input, which is passed to the command.
@@ -55,17 +55,17 @@ trait Command {
     *
     * @return the string which should be printed.
     */
-  def execute(): String
+  def execute(): Try[String]
 
 
   /*
    * Executes the command if the arguments are correct.
    */
-  def apply(): String = {
+  def apply(): Try[String] = {
     if (isValid) {
       execute()
     } else {
-      "bash: " + name + ": invalid arguments"
+      Failure(new IllegalArgumentException("Invalid arguments"))
     }
   }
 }

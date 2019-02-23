@@ -2,7 +2,7 @@ package ru.spbau.lupuleac.cli.commands
 
 import java.io.File
 
-import scala.util.{Failure, Success}
+import scala.util.Try
 
 /**
   * Returns number of lines, words and bytes in each file provided
@@ -21,24 +21,25 @@ case class WcCommand(stdin: Input, arguments: List[String]) extends Command {
       s"$numberOfLines $numberOfWords $numberOfBytes $filename"
     }.mkString(System.lineSeparator())
 
-  override def execute(): String = {
+  override def execute(): Try[String] = {
     if (arguments.isEmpty) {
       val str = stdin.text
-      return List(str.split(System.lineSeparator()).length, str.split("[\\s]+").length, str.getBytes().length).mkString(" ")
+      return Try(List(str.split(System.lineSeparator()).length, str.split("[\\s]+").length, str.getBytes().length).mkString(" "))
     }
-    val files = FileUtils(arguments)
-    files match {
-      case Failure(s) => "bash: cat: " + s
-      case Success(list) =>
+    FileUtils(arguments).flatMap(list => {
+      Try {
         val res = for ((filename, lines) <- list)
           yield (lines.length, lines.map(x => x.split("[\\s]+").length).sum, new File(filename).length().toInt, filename)
         if (arguments.length == 1) {
-          return format(res)
+          format(res)
+        } else {
+          val total = res.foldLeft((0, 0, 0, "total"))((x, y) => (x._1 + y._1, x._2 + y._2, x._3 + y._3, "total"))
+          format(res :+ total)
         }
-        val total = res.foldLeft((0, 0, 0, "total"))((x, y) => (x._1 + y._1, x._2 + y._2, x._3 + y._3, "total"))
-        format(res :+ total)
-    }
+      }
+    })
   }
+
 
   override val name: String = "wc"
 

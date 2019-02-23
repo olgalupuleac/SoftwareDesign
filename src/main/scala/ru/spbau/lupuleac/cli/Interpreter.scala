@@ -2,6 +2,8 @@ package ru.spbau.lupuleac.cli
 
 import ru.spbau.lupuleac.cli.commands._
 
+import scala.util.{Failure, Success}
+
 /**
   * Class, which takes line one by one and returns the output for each command.
   **/
@@ -50,9 +52,13 @@ class Interpreter {
       }
       if (commandName.isDefined) {
         val command = CommandFactory(commandName.get, input, args.toList)
-        val out = command()
-        input = InputWithText(out)
-        args.clear()
+        val outOr = command()
+        outOr match {
+          case Success(out) =>
+            input = InputWithText(out)
+            args.clear()
+          case Failure(s) => return "bash: " + command.name + ": " + s
+        }
       }
     }
     input.text
