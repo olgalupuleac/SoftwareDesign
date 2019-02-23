@@ -1,6 +1,6 @@
 package ru.spbau.lupuleac.cli
 
-import ru.spbau.lupuleac.cli.commands.{CommandFactory, EmptyInput, Input, Stdin}
+import ru.spbau.lupuleac.cli.commands._
 
 /**
   * Class, which takes line one by one and returns the output for each command.
@@ -31,8 +31,8 @@ class Interpreter {
     * @return the output, which should be printed
     */
   def apply(line: String): String = {
-    val lexer = new Parser(scope)
-    val listsOfTokens = lexer.splitLineToTokens(line)
+    val parser = new Parser(scope)
+    val listsOfTokens = parser.splitLineToTokens(line)
     var input = EmptyInput(): Input
     for (tokens <- listsOfTokens) {
       var assignment = true
@@ -51,7 +51,7 @@ class Interpreter {
       if (commandName.isDefined) {
         val command = CommandFactory(commandName.get, input, args.toList)
         val out = command()
-        input = Stdin(out)
+        input = InputWithText(out)
         args.clear()
       }
     }

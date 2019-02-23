@@ -1,6 +1,7 @@
 package ru.spbau.lupuleac.cli.commands
 
 import scala.io.Source
+import scala.util.Try
 
 /**
   * Trait which describes standard input, which is passed to the command.
@@ -13,7 +14,7 @@ sealed trait Input {
 /**
   * Class which describes stdin with some text passed to the command which is preceded by pipe.
   */
-case class Stdin(text: String) extends Input {
+case class InputWithText(text: String) extends Input {
   override val isEmpty: Boolean = false
 }
 
@@ -71,15 +72,37 @@ trait Command {
 
 
 /**
-  * Takes the file name and returns its contents.
+  * Takes the sequence of file names and returns its contents.
   */
 object FileUtils {
-  def apply(str: String): String = {
-    val file = Source.fromFile(str)
-    val res = file.getLines.mkString("\n")
-    file.close()
-    res
+  /**
+    *
+    * @param filenames is a sequence of file names
+    * @return Success and list of filename and it's lines if all files were successfully read,
+    *         Failure with exception otherwise.
+    */
+  def apply(filenames: Seq[String]): Try[List[(String, List[String])]] = Try {
+    val res = for (filename <- filenames)
+      yield (filename, using(io.Source.fromFile(filename)) { source =>
+        (for (line <- source.getLines) yield line).toList
+      })
+    res.toList
   }
+
+  /**
+    * "Loan pattern" to close the resources automatically.
+    *
+    * @param r a resource to be closed
+    * @param f a function to be applied to the resource
+    * @tparam A a return type of the function
+    * @return a result of applying function to the resources
+    */
+  def using[A](r: Source)(f: Source => A): A =
+    try {
+      f(r)
+    } finally {
+      r.close()
+    }
 }
 
 

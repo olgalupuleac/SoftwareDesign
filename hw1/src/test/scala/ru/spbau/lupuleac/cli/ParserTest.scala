@@ -81,4 +81,16 @@ class ParserTest extends FlatSpec with Matchers {
     tokens.length should be (1)
     tokens.head should be (List("e    t y"))
   }
+
+  "Parser" should "throw an exception if the quote isn't closed" in {
+    val scope = new Scope()
+    val parser = new Parser(scope)
+    an [IllegalArgumentException] should be thrownBy parser.splitLineToTokens("\' hj- | ght")
+  }
+
+  "Parser" should "throw an exception if the pipe is followed by another one" in {
+    val scope = new Scope()
+    val parser = new Parser(scope)
+    an [IllegalArgumentException] should be thrownBy parser.splitLineToTokens("echo | |")
+  }
 }
