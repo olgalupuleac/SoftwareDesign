@@ -1,9 +1,9 @@
 package ru.spbau.lupuleac.cli.commands
 
-import org.rogach.scallop.{ScallopConf, ScallopOption}
-
 import scala.collection.mutable
+import scala.util.Try
 import scala.util.matching.Regex
+import org.rogach.scallop.{ScallopConf, ScallopOption}
 
 /**
   * Checks if the provided arguments are correct.
@@ -75,11 +75,11 @@ case class GrepCommand(stdin: Input, arguments: List[String]) extends Command {
     */
   def printFileName: Boolean = conf.files.isDefined && conf.files().size > 1
 
-  override def execute(): String = {
-    val files = if (conf.files.isEmpty) {
+  override def execute(): Try[String] = {
+    val filesWithContents = if (conf.files.isEmpty) {
       List(("", stdin.text))
     } else {
-      conf.files().map(x => (x, FileUtils(x)))
+      FileUtils(conf.files())
     }
     val pattern = if (conf.ignoreCase()) conf.pattern().toLowerCase.r else conf.pattern().r
     val res = mutable.MutableList[String]()

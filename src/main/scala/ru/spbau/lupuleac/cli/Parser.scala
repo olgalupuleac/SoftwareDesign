@@ -149,9 +149,16 @@ class Parser(scope: Scope) {
         case VarName(name) => tokens += scope(name)
         case Plain(text) => tokens += text
         case Pipe() =>
-          splitByPipe += tokens.toList.mkString("").split("[\n]+").filter(x => !(x matches "(\n)*"))
+          val bunchOfTokens =  tokens.toList.mkString("").split("[\n]+").filter(x => !(x matches "(\n)*"))
+          if (bunchOfTokens.isEmpty) {
+            throw new IllegalArgumentException("Syntax error: nothing between pipes")
+          }
+          splitByPipe += bunchOfTokens
           tokens.clear()
       }
+    }
+    if (tokens.nonEmpty) {
+      throw new IllegalArgumentException("Syntax error: unclosed quote")
     }
     splitByPipe.toList
   }
