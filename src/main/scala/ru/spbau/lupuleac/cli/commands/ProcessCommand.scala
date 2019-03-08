@@ -10,8 +10,8 @@ import scala.util.Try
   *
   * @param command is an unknown command to be executed
   */
-case class ProcessCommand(command: String, stdin: Input, arguments: List[String]) extends Command {
-  override def execute(): Try[String] = {
+case class ProcessCommand(command: String, arguments: Seq[String]) extends Command {
+  override def apply(stdin : Input): Try[String] = {
     val prefix = if (System.getProperty("os.name").startsWith("Win")) "cmd /c " else ""
     val args = arguments.mkString(" ")
     val sysCommand = prefix + command + " " + args
@@ -19,6 +19,4 @@ case class ProcessCommand(command: String, stdin: Input, arguments: List[String]
   }
 
   override val name: String = "process"
-
-  override def isValid: Boolean = true
 }

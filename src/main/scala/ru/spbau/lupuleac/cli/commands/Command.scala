@@ -1,14 +1,14 @@
 package ru.spbau.lupuleac.cli.commands
 
 import scala.io.Source
-import scala.util.{Failure, Try}
+import scala.util.Try
 
 /**
   * Trait which describes standard input, which is passed to the command.
   */
 sealed trait Input {
   val isEmpty: Boolean
-  val text: String
+  def get: String
 }
 
 /**
@@ -16,6 +16,7 @@ sealed trait Input {
   */
 case class InputWithText(text: String) extends Input {
   override val isEmpty: Boolean = false
+  override def get : String = text
 }
 
 /**
@@ -23,7 +24,7 @@ case class InputWithText(text: String) extends Input {
   */
 case class EmptyInput() extends Input {
   override val isEmpty: Boolean = true
-  val text = ""
+  override def get = throw new IllegalArgumentException("No input provided")
 }
 
 /**
@@ -35,39 +36,18 @@ trait Command {
     * Name of the command
     */
   val name: String
-  /**
-    * Stdin (Some(String) if the command is preceded by pipe).
-    */
-  val stdin: Input
 
   /**
     * Arguments for a command.
     */
-  val arguments: List[String]
-
-  /**
-    * Checks if the given arguments are correct.
-    **/
-  def isValid: Boolean
+  val arguments: Seq[String]
 
   /**
     * Executes the command with it's arguments.
     *
     * @return the string which should be printed.
     */
-  def execute(): Try[String]
-
-
-  /*
-   * Executes the command if the arguments are correct.
-   */
-  def apply(): Try[String] = {
-    if (isValid) {
-      execute()
-    } else {
-      Failure(new IllegalArgumentException("Invalid arguments"))
-    }
-  }
+  def apply(input: Input): Try[String]
 }
 
 
@@ -110,12 +90,12 @@ object FileUtils {
   * Takes a string and the output of the previous command and returns a command which corresponds to this string.
   */
 object CommandFactory {
-  def apply(name: String, stdin: Input, args: List[String]): Command = name match {
-    case "echo" => EchoCommand(stdin, args)
-    case "pwd" => PwdCommand(stdin)
-    case "wc" => WcCommand(stdin, args)
-    case "exit" => ExitCommand(stdin)
-    case "cat" => CatCommand(stdin, args)
-    case _@t => ProcessCommand(t, stdin, args)
+  def apply(name: String, args: Seq[String]): Command = name match {
+    case "echo" => EchoCommand(args)
+    case "pwd" => PwdCommand()
+    case "wc" => WcCommand(args)
+    case "exit" => ExitCommand()
+    case "cat" => CatCommand(args)
+    case _@t => ProcessCommand(t, args)
   }
 }
