@@ -26,11 +26,11 @@ class CommandTest extends FlatSpec with Matchers {
   "Wc command" should "also print total number for several files correctly" in {
     val severalLinesFileLength =
       new File("src/test/resources/several_lines").length
-    val totalFilesLength = 21 + severalLinesFileLength
+    val totalFilesLength = 11 + severalLinesFileLength
     val expected =
       makeText("1 2 11 src/test/resources/a.txt",
                s"5 5 $severalLinesFileLength src/test/resources/several_lines",
-               s"6 7 32 $totalFilesLength")
+               s"6 7 $totalFilesLength total")
     val outOr = WcCommand(
       List("src/test/resources/a.txt", "src/test/resources/several_lines"))(
       EmptyInput())
