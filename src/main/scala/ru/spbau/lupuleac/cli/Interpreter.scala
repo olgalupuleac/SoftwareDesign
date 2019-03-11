@@ -63,7 +63,8 @@ class Interpreter {
             yield processAssignment(token)
 
         val commands =
-          tokensWithoutAssignments.filter(s => s.nonEmpty)
+          tokensWithoutAssignments
+            .filter(s => s.nonEmpty)
             .map(x => CommandFactory(x.head, x.tail))
         processCommands(commands, EmptyInput()) match {
           case Failure(x) => x.getMessage

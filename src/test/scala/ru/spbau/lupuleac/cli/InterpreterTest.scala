@@ -9,7 +9,6 @@ class InterpreterTest extends FlatSpec with Matchers {
     interpreter(line) should be("x y z")
   }
 
-
   "Interpreter" should "substitute variables in echo command" in {
     val interpreter = new Interpreter()
     interpreter("x=1")
@@ -34,7 +33,7 @@ class InterpreterTest extends FlatSpec with Matchers {
   "Interpreter" should "be able to deal with this trash" in {
     val interpreter = new Interpreter()
     interpreter("x=ho")
-    interpreter("e'c'\"$x\" a") should be ("a")
+    interpreter("e'c'\"$x\" a") should be("a")
   }
 
   "Interpreter" should "treat words in double quotes as one argument" in {

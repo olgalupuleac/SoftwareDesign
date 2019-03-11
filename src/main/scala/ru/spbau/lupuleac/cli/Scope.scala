@@ -13,7 +13,7 @@ class Scope {
     * @return variable value if it is in scope or empty string otherwise
     */
   def apply(varName: String): String = {
-    map getOrElse(varName, "")
+    map getOrElse (varName, "")
   }
 
   /**

@@ -16,7 +16,7 @@ sealed trait Input {
   */
 case class InputWithText(text: String) extends Input {
   override val isEmpty: Boolean = false
-  override def get : String = text
+  override def get: String = text
 }
 
 /**
@@ -32,6 +32,7 @@ case class EmptyInput() extends Input {
   * Output is an output of the previous command
   */
 trait Command {
+
   /**
     * Name of the command
     */
@@ -50,11 +51,11 @@ trait Command {
   def apply(input: Input): Try[String]
 }
 
-
 /**
   * Takes the sequence of file names and returns its contents.
   */
 object FileUtils {
+
   /**
     *
     * @param filenames is a sequence of file names
@@ -63,9 +64,10 @@ object FileUtils {
     */
   def apply(filenames: Seq[String]): Try[List[(String, List[String])]] = Try {
     val res = for (filename <- filenames)
-      yield (filename, using(io.Source.fromFile(filename)) { source =>
-        (for (line <- source.getLines) yield line).toList
-      })
+      yield
+        (filename, using(io.Source.fromFile(filename)) { source =>
+          (for (line <- source.getLines) yield line).toList
+        })
     res.toList
   }
 
@@ -85,17 +87,16 @@ object FileUtils {
     }
 }
 
-
 /**
   * Takes a string and the output of the previous command and returns a command which corresponds to this string.
   */
 object CommandFactory {
   def apply(name: String, args: Seq[String]): Command = name match {
     case "echo" => EchoCommand(args)
-    case "pwd" => PwdCommand()
-    case "wc" => WcCommand(args)
+    case "pwd"  => PwdCommand()
+    case "wc"   => WcCommand(args)
     case "exit" => ExitCommand()
-    case "cat" => CatCommand(args)
-    case _@t => ProcessCommand(t, args)
+    case "cat"  => CatCommand(args)
+    case _ @t   => ProcessCommand(t, args)
   }
 }

@@ -39,6 +39,7 @@ class ParseException(s: String) extends Exception(s) {}
   * Represents a state in finite-state machine used for parsing a string.
   */
 sealed trait ParserAction {
+
   /**
     * Current string which we had during parsing.
     * New string is created when token is finished
@@ -75,7 +76,8 @@ case class SingleQuoted(buffer: String) extends ParserAction {
   override def apply(c: Char): (Token, ParserAction) = {
     c match {
       case ParserAction.singleQuote => (Plain(buffer), Simple(""))
-      case ParserAction.terminate => throw new ParseException("Syntax error : unclosed quote")
+      case ParserAction.terminate =>
+        throw new ParseException("Syntax error : unclosed quote")
       case _ => (NotFinished(), SingleQuoted(buffer + c))
     }
   }
@@ -90,8 +92,9 @@ case class DoubleQuoted(buffer: String) extends ParserAction {
   override def apply(c: Char): (Token, ParserAction) = {
     c match {
       case ParserAction.doubleQuote => (Plain(buffer), Simple(""))
-      case ParserAction.envVar => (Plain(buffer), VarCall(DoubleQuoted(""), ""))
-      case ParserAction.terminate => throw new ParseException("Syntax error : unclosed quote")
+      case ParserAction.envVar      => (Plain(buffer), VarCall(DoubleQuoted(""), ""))
+      case ParserAction.terminate =>
+        throw new ParseException("Syntax error : unclosed quote")
       case _ => (NotFinished(), DoubleQuoted(buffer + c))
     }
   }
@@ -106,13 +109,15 @@ case class DoubleQuoted(buffer: String) extends ParserAction {
 case class VarCall(parent: ParserAction, buffer: String) extends ParserAction {
   override def apply(c: Char): (Token, ParserAction) = {
     c match {
-      case ParserAction.envVar => (VarName(buffer), VarCall(parent, ""))
-      case ParserAction.space => (VarName(buffer), parent(c)._2)
+      case ParserAction.envVar      => (VarName(buffer), VarCall(parent, ""))
+      case ParserAction.space       => (VarName(buffer), parent(c)._2)
       case ParserAction.doubleQuote => (VarName(buffer), parent(c)._2)
-      case ParserAction.singleQuote => throw new ParseException("Syntax error : variable name cannot contain quotes")
-      case ParserAction.pipe => (VarName(buffer), parent(c)._2)
+      case ParserAction.singleQuote =>
+        throw new ParseException(
+          "Syntax error : variable name cannot contain quotes")
+      case ParserAction.pipe      => (VarName(buffer), parent(c)._2)
       case ParserAction.terminate => (VarName(buffer), parent(c)._2)
-      case _ => (NotFinished(), VarCall(parent, buffer + c))
+      case _                      => (NotFinished(), VarCall(parent, buffer + c))
     }
   }
 }
@@ -125,13 +130,14 @@ case class VarCall(parent: ParserAction, buffer: String) extends ParserAction {
 case class Simple(buffer: String) extends ParserAction {
   override def apply(c: Char): (Token, ParserAction) = {
     c match {
-      case ParserAction.space => (NotFinished(), Simple(buffer + System.lineSeparator()))
-      case ParserAction.pipe => (Plain(buffer), PipeGap())
+      case ParserAction.space =>
+        (NotFinished(), Simple(buffer + System.lineSeparator()))
+      case ParserAction.pipe        => (Plain(buffer), PipeGap())
       case ParserAction.singleQuote => (Plain(buffer), SingleQuoted(""))
       case ParserAction.doubleQuote => (Plain(buffer), DoubleQuoted(""))
-      case ParserAction.envVar => (Plain(buffer), VarCall(Simple(""), ""))
-      case ParserAction.terminate => (Plain(buffer), null)
-      case _ => (NotFinished(), Simple(buffer + c))
+      case ParserAction.envVar      => (Plain(buffer), VarCall(Simple(""), ""))
+      case ParserAction.terminate   => (Plain(buffer), null)
+      case _                        => (NotFinished(), Simple(buffer + c))
     }
   }
 }
@@ -150,8 +156,11 @@ case class PipeGap() extends ParserAction {
     */
   override def apply(c: Char): (Token, ParserAction) = c match {
     case ParserAction.space => (NotFinished(), PipeGap())
-    case ParserAction.terminate => throw new ParseException("Syntax error : unclosed pipe in the end of the line")
-    case ParserAction.pipe => throw new ParseException("Syntax error: empty space between pipes")
+    case ParserAction.terminate =>
+      throw new ParseException(
+        "Syntax error : unclosed pipe in the end of the line")
+    case ParserAction.pipe =>
+      throw new ParseException("Syntax error: empty space between pipes")
     case _ => (Pipe(), Simple("")(c)._2)
   }
 }
@@ -177,13 +186,17 @@ class Parser(scope: Scope) {
     */
   def splitLineToTokens(line: String): Try[Array[Array[String]]] = {
     Try {
-      val tokens = getTokens(Simple(""), (line + ParserAction.terminate).toCharArray)
-      val splitByPipes = tokens.map {
-        case t@Pipe() => ParserAction.terminate
-        case VarName(name) => scope(name)
-        case Plain(text) => text
-        case _ => ""
-      }.mkString("").split(ParserAction.terminate)
+      val tokens =
+        getTokens(Simple(""), (line + ParserAction.terminate).toCharArray)
+      val splitByPipes = tokens
+        .map {
+          case t @ Pipe()    => ParserAction.terminate
+          case VarName(name) => scope(name)
+          case Plain(text)   => text
+          case _             => ""
+        }
+        .mkString("")
+        .split(ParserAction.terminate)
       val regexToSplit = "[" + System.lineSeparator() + "]+"
       splitByPipes.map(x => x.split(regexToSplit).filter(x => x.nonEmpty))
     }

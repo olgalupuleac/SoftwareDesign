@@ -25,8 +25,11 @@ class CommandTest extends FlatSpec with Matchers {
 
   "Wc command" should "also print total number for several files correctly" in {
     val expected = makeText("1 2 11 src/test/resources/a.txt",
-      "5 5 21 src/test/resources/several_lines", "6 7 32 total")
-    val outOr = WcCommand(List("src/test/resources/a.txt", "src/test/resources/several_lines"))(EmptyInput())
+                            "5 5 21 src/test/resources/several_lines",
+                            "6 7 32 total")
+    val outOr = WcCommand(
+      List("src/test/resources/a.txt", "src/test/resources/several_lines"))(
+      EmptyInput())
     outOr.success.value should be(expected)
   }
 
@@ -41,7 +44,8 @@ class CommandTest extends FlatSpec with Matchers {
   }
 
   "Wc command" should "ignore stdin if the arguments are provided" in {
-    val outOr = WcCommand(List("src/test/resources/a.txt"))(InputWithText("aaa a"))
+    val outOr =
+      WcCommand(List("src/test/resources/a.txt"))(InputWithText("aaa a"))
     outOr.success.value should be("1 2 11 src/test/resources/a.txt")
   }
 
@@ -61,19 +65,27 @@ class CommandTest extends FlatSpec with Matchers {
   }
 
   "Cat command" should "print contents of all files" in {
-    val outOr = CatCommand(List("src/test/resources/a.txt", "src/test/resources/several_lines"))(EmptyInput())
-    outOr.success.value should be(makeText("hello world", "my", "lines", "in", "this", "file"))
+    val outOr = CatCommand(
+      List("src/test/resources/a.txt", "src/test/resources/several_lines"))(
+      EmptyInput())
+    outOr.success.value should be(
+      makeText("hello world", "my", "lines", "in", "this", "file"))
   }
 
   "Cat command" should "ignore stdin if arguments are provided" in {
-    val outOr = CatCommand(List("src/test/resources/several_lines"))(InputWithText("aa"))
+    val outOr =
+      CatCommand(List("src/test/resources/several_lines"))(InputWithText("aa"))
     outOr.success.value should be(makeText("my", "lines", "in", "this", "file"))
   }
 
   "Process command" should "find a string in file" in {
-    val command = if (System.getProperty("os.name").startsWith("Win")) "find \"i\" src/test/resources/several_lines" else "grep i src/test/resources/several_lines"
+    val command =
+      if (System.getProperty("os.name").startsWith("Win"))
+        "find \"i\" src/test/resources/several_lines"
+      else "grep i src/test/resources/several_lines"
     val res = ProcessCommand(command, List())(EmptyInput())
-    res.success.value should include(List("lines", "in", "this", "file").mkString(System.lineSeparator()))
+    res.success.value should include(
+      List("lines", "in", "this", "file").mkString(System.lineSeparator()))
     res.success.value should not include "my"
   }
 
@@ -83,12 +95,16 @@ class CommandTest extends FlatSpec with Matchers {
   }
 
   "Cat command" should "print what exception occured if file doesn't exist" in {
-    val outOr = CatCommand(List("src/test/resources/a.txt", "src/test/resources/not_a_file"))(EmptyInput())
+    val outOr = CatCommand(
+      List("src/test/resources/a.txt", "src/test/resources/not_a_file"))(
+      EmptyInput())
     outOr.failure.exception shouldBe a[FileNotFoundException]
   }
 
   "Wc command" should "print what exception occured if file doesn't exist" in {
-    val outOr = WcCommand(List("src/test/resources/a.txt", "src/test/resources/not_a_file"))(EmptyInput())
+    val outOr = WcCommand(
+      List("src/test/resources/a.txt", "src/test/resources/not_a_file"))(
+      EmptyInput())
     outOr.failure.exception shouldBe a[FileNotFoundException]
   }
 }

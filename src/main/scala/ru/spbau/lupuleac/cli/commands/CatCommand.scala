@@ -1,6 +1,5 @@
 package ru.spbau.lupuleac.cli.commands
 
-
 import scala.util.{Success, Try}
 
 /**
@@ -14,6 +13,7 @@ case class CatCommand(arguments: Seq[String]) extends Command {
       return Try(stdin.get)
     }
     val files = FileUtils(arguments)
-    files.flatMap(t => Try(t.flatMap(x => x._2).mkString(System.lineSeparator())))
+    files.flatMap(t =>
+      Try(t.flatMap(x => x._2).mkString(System.lineSeparator())))
   }
 }

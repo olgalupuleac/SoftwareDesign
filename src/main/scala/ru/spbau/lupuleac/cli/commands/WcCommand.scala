@@ -15,18 +15,24 @@ case class WcCommand(arguments: Seq[String]) extends Command {
     if (arguments.isEmpty) {
       return Try {
         val str = stdin.get
-        List(str.split(System.lineSeparator()).length, str.split("[\\s]+").count(s => s.nonEmpty),
-          str.getBytes().length).mkString(" ")
+        List(str.split(System.lineSeparator()).length,
+             str.split("[\\s]+").count(s => s.nonEmpty),
+             str.getBytes().length).mkString(" ")
       }
     }
     FileUtils(arguments).flatMap(list => {
       Try {
         val res = for ((filename, lines) <- list)
-          yield (lines.length, lines.map(x => x.split("[\\s]+").count(s => s.nonEmpty)).sum, new File(filename).length().toInt, filename)
+          yield
+            (lines.length,
+             lines.map(x => x.split("[\\s]+").count(s => s.nonEmpty)).sum,
+             new File(filename).length().toInt,
+             filename)
         if (arguments.length == 1) {
           format(res)
         } else {
-          val total = res.foldLeft((0, 0, 0, "total"))((x, y) => (x._1 + y._1, x._2 + y._2, x._3 + y._3, "total"))
+          val total = res.foldLeft((0, 0, 0, "total"))((x, y) =>
+            (x._1 + y._1, x._2 + y._2, x._3 + y._3, "total"))
           format(res :+ total)
         }
       }
@@ -41,7 +47,10 @@ case class WcCommand(arguments: Seq[String]) extends Command {
     * @return a string representation of the list
     */
   def format(list: List[(Int, Int, Int, String)]): String =
-    list.map { case (numberOfLines, numberOfWords, numberOfBytes, filename) =>
-      s"$numberOfLines $numberOfWords $numberOfBytes $filename"
-    }.mkString(System.lineSeparator())
+    list
+      .map {
+        case (numberOfLines, numberOfWords, numberOfBytes, filename) =>
+          s"$numberOfLines $numberOfWords $numberOfBytes $filename"
+      }
+      .mkString(System.lineSeparator())
 }

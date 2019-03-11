@@ -8,7 +8,7 @@ class ParserTest extends FlatSpec with Matchers {
     val line = "Hello new    world"
     val parser = new Parser(new Scope())
     val tokensOr = parser.splitLineToTokens(line)
-    tokensOr.success.value.length should be (1)
+    tokensOr.success.value.length should be(1)
     tokensOr.success.value.head should be(Array("Hello", "new", "world"))
   }
 
@@ -17,7 +17,8 @@ class ParserTest extends FlatSpec with Matchers {
     val parser = new Parser(new Scope())
     val tokensOr = parser.splitLineToTokens(line)
     tokensOr.success.value.length should be(1)
-    tokensOr.success.value.head should be (Array("Hello", "new k", " my name ", "world"))
+    tokensOr.success.value.head should be(
+      Array("Hello", "new k", " my name ", "world"))
   }
 
   "Parser" should "also ignore quotes inside quotes" in {
@@ -25,14 +26,15 @@ class ParserTest extends FlatSpec with Matchers {
     val parser = new Parser(new Scope())
     val tokensOr = parser.splitLineToTokens(line)
     tokensOr.success.value.length should be(1)
-    tokensOr.success.value.head should be(Array("Hello", "new k  \" my name \" world"))
+    tokensOr.success.value.head should be(
+      Array("Hello", "new k  \" my name \" world"))
   }
 
   "Parser" should "also parse several quoted tokens as one" in {
     val line = "e'c'\"h\"o"
     val parser = new Parser(new Scope())
     val tokensOr = parser.splitLineToTokens(line)
-    tokensOr.success.value.length should be (1)
+    tokensOr.success.value.length should be(1)
     tokensOr.success.value.head should be(Array("echo"))
   }
 
@@ -42,7 +44,7 @@ class ParserTest extends FlatSpec with Matchers {
     scope("FILE", "au")
     val parser = new Parser(scope)
     val tokensOr = parser.splitLineToTokens(line)
-    tokensOr.success.value.length should be (1)
+    tokensOr.success.value.length should be(1)
     tokensOr.success.value.head should be(Array("echo", "au x"))
   }
 
@@ -52,18 +54,18 @@ class ParserTest extends FlatSpec with Matchers {
     scope("x", "1")
     val parser = new Parser(scope)
     val tokensOr = parser.splitLineToTokens(line)
-    tokensOr.success.value.length should be (2)
-    tokensOr.success.value.head should be (Array("echo", "hello1"))
-    tokensOr.success.value(1) should be (Array("c"))
+    tokensOr.success.value.length should be(2)
+    tokensOr.success.value.head should be(Array("echo", "hello1"))
+    tokensOr.success.value(1) should be(Array("c"))
   }
 
   "Parser" should "split string by pipes" in {
     val scope = new Scope()
     val parser = new Parser(scope)
     val tokensOr = parser.splitLineToTokens("echo au | wc")
-    tokensOr.success.value.length should be (2)
-    tokensOr.success.value.head should be (Array("echo", "au"))
-    tokensOr.success.value(1) should be (Array("wc"))
+    tokensOr.success.value.length should be(2)
+    tokensOr.success.value.head should be(Array("echo", "au"))
+    tokensOr.success.value(1) should be(Array("wc"))
   }
 
   "Parser" should "substitute several variables" in {
@@ -79,21 +81,23 @@ class ParserTest extends FlatSpec with Matchers {
     val scope = new Scope()
     val parser = new Parser(scope)
     val tokensOr = parser.splitLineToTokens("\"e  \"\"  t y\"")
-    tokensOr.success.value.length should be (1)
-    tokensOr.success.value.head should be (Array("e    t y"))
+    tokensOr.success.value.length should be(1)
+    tokensOr.success.value.head should be(Array("e    t y"))
   }
 
   "Parser" should "throw an exception if the quote isn't closed" in {
     val scope = new Scope()
     val parser = new Parser(scope)
     val resOr = parser.splitLineToTokens("\' hj- | ght")
-    resOr.failure.exception.getMessage should be ("Syntax error : unclosed quote")
+    resOr.failure.exception.getMessage should be(
+      "Syntax error : unclosed quote")
   }
 
   "Parser" should "throw an exception if the pipe is followed by another one" in {
     val scope = new Scope()
     val parser = new Parser(scope)
-    val resOr =  parser.splitLineToTokens("echo | |")
-    resOr.failure.exception.getMessage should be("Syntax error: empty space between pipes")
+    val resOr = parser.splitLineToTokens("echo | |")
+    resOr.failure.exception.getMessage should be(
+      "Syntax error: empty space between pipes")
   }
 }
