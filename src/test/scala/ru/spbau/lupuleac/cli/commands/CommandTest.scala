@@ -1,6 +1,6 @@
 package ru.spbau.lupuleac.cli.commands
 
-import java.io.FileNotFoundException
+import java.io.{File, FileNotFoundException}
 
 import org.scalatest.TryValues._
 import org.scalatest.{FlatSpec, Matchers}
@@ -24,9 +24,13 @@ class CommandTest extends FlatSpec with Matchers {
   }
 
   "Wc command" should "also print total number for several files correctly" in {
-    val expected = makeText("1 2 11 src/test/resources/a.txt",
-                            "5 5 21 src/test/resources/several_lines",
-                            "6 7 32 total")
+    val severalLinesFileLength =
+      new File("src/test/resources/several_lines").length
+    val totalFilesLength = 21 + severalLinesFileLength
+    val expected =
+      makeText("1 2 11 src/test/resources/a.txt",
+               s"5 5 $severalLinesFileLength src/test/resources/several_lines",
+               s"6 7 32 $totalFilesLength")
     val outOr = WcCommand(
       List("src/test/resources/a.txt", "src/test/resources/several_lines"))(
       EmptyInput())
@@ -34,8 +38,10 @@ class CommandTest extends FlatSpec with Matchers {
   }
 
   "Wc command" should "calculate number of words if the line starts with space" in {
+    val spacesFileLength = new File("src/test/resources/spaces.txt").length
     val outOr = WcCommand(List("src/test/resources/spaces.txt"))(EmptyInput())
-    outOr.success.value should be("5 10 59 src/test/resources/spaces.txt")
+    outOr.success.value should be(
+      s"5 10 $spacesFileLength src/test/resources/spaces.txt")
   }
 
   "Wc command" should "print number of lines, words and bytes in file from stdin if no arguments are provided" in {
