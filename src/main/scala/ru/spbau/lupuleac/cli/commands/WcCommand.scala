@@ -9,23 +9,14 @@ import scala.util.Try
   * as an argument and total number of lines, words and bytes.
   */
 case class WcCommand(arguments: Seq[String]) extends Command {
-  /**
-    * Transforms a list of tuples with info to string.
-    *
-    * @param list is a list to be transformed. Elements of list should be tuples (number of lines,
-    *             number of words, number of bytes, filename).
-    * @return a string representation of the list
-    */
-  def format(list: List[(Int, Int, Int, String)]): String =
-    list.map { case (numberOfLines, numberOfWords, numberOfBytes, filename) =>
-      s"$numberOfLines $numberOfWords $numberOfBytes $filename"
-    }.mkString(System.lineSeparator())
+  override val name: String = "wc"
 
   override def apply(stdin: Input): Try[String] = {
     if (arguments.isEmpty) {
       return Try {
         val str = stdin.get
-        List(str.split(System.lineSeparator()).length, str.split("[\\s]+").count(s => s.nonEmpty), str.getBytes().length).mkString(" ")
+        List(str.split(System.lineSeparator()).length, str.split("[\\s]+").count(s => s.nonEmpty),
+          str.getBytes().length).mkString(" ")
       }
     }
     FileUtils(arguments).flatMap(list => {
@@ -42,6 +33,15 @@ case class WcCommand(arguments: Seq[String]) extends Command {
     })
   }
 
-
-  override val name: String = "wc"
+  /**
+    * Transforms a list of tuples with info to string.
+    *
+    * @param list is a list to be transformed. Elements of list should be tuples (number of lines,
+    *             number of words, number of bytes, filename).
+    * @return a string representation of the list
+    */
+  def format(list: List[(Int, Int, Int, String)]): String =
+    list.map { case (numberOfLines, numberOfWords, numberOfBytes, filename) =>
+      s"$numberOfLines $numberOfWords $numberOfBytes $filename"
+    }.mkString(System.lineSeparator())
 }
