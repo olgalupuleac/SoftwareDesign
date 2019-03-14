@@ -56,7 +56,7 @@ case class GrepCommand(arguments: Seq[String]) extends Command {
             pattern = "(?i)" + pattern
           }
           if (conf.wordRegex()) {
-            pattern = "\b" + pattern + "\b"
+            pattern = "\\b" + pattern + "\\b"
           }
           if (conf.files.isEmpty) {
             matchLines(stdin.get.split(System.lineSeparator()), pattern, 0)
@@ -64,7 +64,7 @@ case class GrepCommand(arguments: Seq[String]) extends Command {
           } else {
             val files = FileUtils(conf.files()).get
             files
-              .map {
+              .flatMap {
                 case (filename, lines) =>
                   matchLines(lines, pattern, 0).map(line =>
                     lineToPrint(filename, line))
