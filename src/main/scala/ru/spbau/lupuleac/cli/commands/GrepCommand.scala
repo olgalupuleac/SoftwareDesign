@@ -78,6 +78,8 @@ case class GrepCommand(arguments: Seq[String]) extends Command {
   }
 
   /**
+    * Takes a sequence of lines and returns lines
+    * which satisfies command arguments
     *
     * @param lines        is a lines to be matched
     * @param pattern      is a pattern which we should find
