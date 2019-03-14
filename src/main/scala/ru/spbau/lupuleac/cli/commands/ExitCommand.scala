@@ -5,15 +5,13 @@ import scala.util.{Success, Try}
 /**
   * Exits from the interpreter.
   */
-case class ExitCommand(stdin: Input) extends Command {
-  override def execute(): Try[String] = {
+case class ExitCommand() extends Command {
+  override def apply(stdin: Input): Try[String] = {
     System.exit(0)
     Success("")
   }
 
   override val name: String = "exit"
-
-  override def isValid: Boolean = true
 
   override val arguments: List[String] = List()
 }
