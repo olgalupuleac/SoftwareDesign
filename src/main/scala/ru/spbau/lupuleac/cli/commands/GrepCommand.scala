@@ -1,42 +1,55 @@
 package ru.spbau.lupuleac.cli.commands
 
-import org.rogach.scallop.{ScallopConf, ScallopOption}
+import com.joefkelley.argyle._
+import ru.spbau.lupuleac.cli.commands.GrepCommand.GrepConfig
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
-/**
-  * Checks if the provided arguments are correct.
-  *
-  * @param arguments is arguments to be checked.
-  */
-case class GrepConf(arguments: Seq[String]) extends ScallopConf(arguments) {
-  val ignoreCase: ScallopOption[Boolean] = toggle(
-    name = "ignore-case",
-    default = Some(false),
-    descrYes =
-      "Ignore case distinctions in both the PATTERN and the input files.")
-  val wordRegex: ScallopOption[Boolean] = toggle(
-    name = "word-regexp",
-    default = Some(false),
-    descrYes = "Select only those lines containing matches that form whole words.\n" +
-      "The test is that the matching substring must either be at the beginning of the line, or preceded by a non-word constituent character. Similarly, it must be either at the end of the line or followed by a non-word constituent character. Word-constituent characters are letters, digits, and the underscore."
-  )
-  val afterContext: ScallopOption[Int] = opt[Int](
-    short = 'A',
-    descr = "Print NUM lines of trailing context after matching lines.",
-    validate = x => x >= 0,
-    argName = "NUM",
-    default = Some(0))
-  val pattern: ScallopOption[String] = trailArg[String](validate = x =>
-    try {
-      x.r
-      true
-    } catch {
-      case _: Exception => false
-  })
-  val files: ScallopOption[List[String]] =
-    trailArg[List[String]](required = false)
-  verify()
+object GrepCommand {
+  val conf: Arg[GrepConfig] = (flag("-i", "--ignore-case") and
+    flag("-w", "--word-regexp") and
+    optional[Int]("-A").default(0) and
+    repeatedFree[String] and requiredFree[String]).as[GrepConfig](
+    args =>
+      GrepConfig(args.head,
+        args.tail.head,
+        args.tail.tail.head,
+        args.tail.tail.tail.tail.head,
+        args.tail.tail.tail.head))
+
+  /**
+    * Parameters for grep command.
+    *
+    * @param ignoreCase   ignore case distinctions in  both  the  PATTERN  and
+    *                     the  input
+    *                     files
+    * @param wordRegex    select only those  lines  containing  matches  that
+    *                     form  whole
+    *               words.   The  test is that the matching substring must either be
+    *                     at the  beginning  of  the  line,  or  preceded  by  a  non-word
+    *                     constituent  character.  Similarly, it must be either at the end
+    *                     of the line or followed by  a  non-word  constituent  character.
+    *                     Word-constituent   characters   are  letters,  digits,  and  the
+    *                     underscore
+    * @param afterContext print specified number  lines  of  trailing  context
+    *                     after
+    *                     matching  lines
+    *                     Places   a  line  containing  a  group  separator  (--)  between
+    *                     contiguous groups of matches.  With the  -o  or  --only-matching
+    *                     option, this has no effect and a warning is given
+    * @param pattern      grep searches for files containing the given pattern
+    * @param files        grep  searches the named input files (or standard
+    *                     input if no files are
+    *                     named)
+    */
+  case class GrepConfig(
+                         ignoreCase: Boolean,
+                         wordRegex: Boolean,
+                         afterContext: Int,
+                         pattern: String,
+                         files: List[String]
+                       )
+
 }
 
 /**
@@ -44,37 +57,37 @@ case class GrepConf(arguments: Seq[String]) extends ScallopConf(arguments) {
   **/
 case class GrepCommand(arguments: Seq[String]) extends Command {
   override val name: String = "grep"
-  private val confOr: Try[GrepConf] = Try(GrepConf(arguments))
+  private val confOr: Try[GrepConfig] = GrepCommand.conf.parse(arguments: _*)
 
   override def apply(stdin: Input): Try[String] = {
-    confOr match {
-      case Failure(e) => Failure(e)
-      case Success(conf) =>
-        Try {
-          var pattern = conf.pattern()
-          if (conf.ignoreCase()) {
-            pattern = "(?i)" + pattern
+    Try {
+      val conf = confOr.get
+      if (conf.afterContext < 0) {
+        throw new IllegalArgumentException(
+          "Number of lines should not be a negative" +
+            " number")
+      }
+      var pattern = conf.pattern
+      if (conf.ignoreCase) {
+        pattern = "(?i)" + pattern
+      }
+      if (conf.wordRegex) {
+        pattern = "\\b" + pattern + "\\b"
+      }
+      if (conf.files.isEmpty) {
+        matchLines(stdin.get.split(System.lineSeparator()), pattern, 0)
+          .mkString(System.lineSeparator())
+      } else {
+        val files = FileUtils(conf.files).get
+        files
+          .flatMap {
+            case (filename, lines) =>
+              matchLines(lines, pattern, 0).map(line =>
+                lineToPrint(filename, line))
           }
-          if (conf.wordRegex()) {
-            pattern = "\\b" + pattern + "\\b"
-          }
-          if (conf.files.isEmpty) {
-            matchLines(stdin.get.split(System.lineSeparator()), pattern, 0)
-              .mkString(System.lineSeparator())
-          } else {
-            val files = FileUtils(conf.files()).get
-            files
-              .flatMap {
-                case (filename, lines) =>
-                  matchLines(lines, pattern, 0).map(line =>
-                    lineToPrint(filename, line))
-              }
-              .mkString(System.lineSeparator())
-          }
-        }
-
+          .mkString(System.lineSeparator())
+      }
     }
-
   }
 
   /**
@@ -93,12 +106,13 @@ case class GrepCommand(arguments: Seq[String]) extends Command {
     if (lines.isEmpty) return List()
     val firstMatch = pattern.r findFirstMatchIn lines.head
     if (firstMatch.isDefined) {
-      lines.head :: matchLines(lines.tail,
-                               pattern,
-                               confOr.get
-                                 .afterContext())
+      lines.head :: matchLines(lines.tail, pattern, confOr.get.afterContext)
     } else {
-      matchLines(lines.tail, pattern, Math.max(0, afterContext - 1))
+      if (afterContext > 0) {
+        lines.head :: matchLines(lines.tail, pattern, afterContext - 1)
+      } else {
+        matchLines(lines.tail, pattern, 0)
+      }
     }
   }
 
@@ -116,6 +130,5 @@ case class GrepCommand(arguments: Seq[String]) extends Command {
     * @return true if the file name should be printed before every line
     */
   def printFileName: Boolean =
-    confOr.isSuccess && confOr.get.files.isDefined &&
-      confOr.get.files().size > 1
+    confOr.isSuccess && confOr.get.files.size > 1
 }
