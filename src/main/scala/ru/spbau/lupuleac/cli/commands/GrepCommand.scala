@@ -12,10 +12,10 @@ object GrepCommand {
     repeatedFree[String] and requiredFree[String]).as[GrepConfig](
     args =>
       GrepConfig(args.head,
-        args.tail.head,
-        args.tail.tail.head,
-        args.tail.tail.tail.tail.head,
-        args.tail.tail.tail.head))
+                 args.tail.head,
+                 args.tail.tail.head,
+                 args.tail.tail.tail.tail.head,
+                 args.tail.tail.tail.head))
 
   /**
     * Parameters for grep command.
@@ -43,12 +43,12 @@ object GrepCommand {
     *                     named)
     */
   case class GrepConfig(
-                         ignoreCase: Boolean,
-                         wordRegex: Boolean,
-                         afterContext: Int,
-                         pattern: String,
-                         files: List[String]
-                       )
+      ignoreCase: Boolean,
+      wordRegex: Boolean,
+      afterContext: Int,
+      pattern: String,
+      files: List[String]
+  )
 
 }
 
