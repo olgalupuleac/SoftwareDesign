@@ -9,13 +9,13 @@ object GrepCommand {
   val conf: Arg[GrepConfig] = (flag("-i", "--ignore-case") and
     flag("-w", "--word-regexp") and
     optional[Int]("-A").default(0) and
-    repeatedFree[String] and requiredFree[String]).as[GrepConfig] /*(
+    repeatedFree[String] and requiredFree[String]).as[GrepConfig](
     args =>
       GrepConfig(args.head,
                  args.tail.head,
                  args.tail.tail.head,
                  args.tail.tail.tail.head,
-                 args.tail.tail.tail.tail.head))*/
+                 args.tail.tail.tail.tail.head))
 
   /**
     * Parameters for grep command.
