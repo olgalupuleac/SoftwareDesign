@@ -123,15 +123,15 @@ class CommandTest extends FlatSpec with Matchers {
       GrepCommand.GrepConfig(ignoreCase = true,
                              wordRegex = false,
                              5,
-                             "[a]*",
-                             List("file1", "file2")))
+                             List("file1", "file2"),
+                             "[a]*"))
   }
 
   "Grep config" should "evaluate arguments correctly if files are not provided" in {
     val conf = GrepCommand.conf.parse("-i", "-w", "[a]*")
     conf.success.value should be(
       GrepCommand
-        .GrepConfig(ignoreCase = true, wordRegex = true, 0, "[a]*", List()))
+        .GrepConfig(ignoreCase = true, wordRegex = true, 0, List(), "[a]*"))
   }
 
   "Grep config" should "evaluate arguments correctly if there is one file" in {
@@ -140,8 +140,8 @@ class CommandTest extends FlatSpec with Matchers {
       GrepCommand.GrepConfig(ignoreCase = false,
                              wordRegex = false,
                              0,
-                             "[a]*",
-                             List("file1")))
+                             List("file1"),
+                             "[a]*"))
   }
 
   "Grep config" should "fail if no pattern is provided" in {

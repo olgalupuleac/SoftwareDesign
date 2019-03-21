@@ -14,8 +14,8 @@ object GrepCommand {
       GrepConfig(args.head,
                  args.tail.head,
                  args.tail.tail.head,
-                 args.tail.tail.tail.tail.head,
-                 args.tail.tail.tail.head))
+                 args.tail.tail.tail.head,
+                 args.tail.tail.tail.tail.head))
 
   /**
     * Parameters for grep command.
@@ -37,19 +37,18 @@ object GrepCommand {
     *                     Places   a  line  containing  a  group  separator  (--)  between
     *                     contiguous groups of matches.  With the  -o  or  --only-matching
     *                     option, this has no effect and a warning is given
-    * @param pattern      grep searches for files containing the given pattern
     * @param files        grep  searches the named input files (or standard
     *                     input if no files are
     *                     named)
+    * @param pattern      grep searches for files containing the given pattern
     */
   case class GrepConfig(
       ignoreCase: Boolean,
       wordRegex: Boolean,
       afterContext: Int,
-      pattern: String,
-      files: List[String]
+      files: List[String],
+      pattern: String
   )
-
 }
 
 /**
