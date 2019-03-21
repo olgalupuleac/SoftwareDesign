@@ -9,13 +9,13 @@ object GrepCommand {
   val conf: Arg[GrepConfig] = (flag("-i", "--ignore-case") and
     flag("-w", "--word-regexp") and
     optional[Int]("-A").default(0) and
-    repeatedFree[String] and requiredFree[String]).as[GrepConfig](
+    repeatedFree[String] and requiredFree[String]).as[GrepConfig] /*(
     args =>
       GrepConfig(args.head,
                  args.tail.head,
                  args.tail.tail.head,
                  args.tail.tail.tail.head,
-                 args.tail.tail.tail.tail.head))
+                 args.tail.tail.tail.tail.head))*/
 
   /**
     * Parameters for grep command.
@@ -58,7 +58,7 @@ case class GrepCommand(arguments: Seq[String]) extends Command {
   override val name: String = "grep"
   private val confOr: Try[GrepConfig] = GrepCommand.conf.parse(arguments: _*)
 
-  override def apply(stdin: Input): Try[String] = {
+  override def apply(stdin: Input): Try[String] =
     Try {
       val conf = confOr.get
       if (conf.afterContext < 0) {
@@ -87,7 +87,6 @@ case class GrepCommand(arguments: Seq[String]) extends Command {
           .mkString(System.lineSeparator())
       }
     }
-  }
 
   /**
     * Takes a sequence of lines and returns lines
