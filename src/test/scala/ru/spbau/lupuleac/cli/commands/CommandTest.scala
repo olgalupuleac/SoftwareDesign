@@ -1,9 +1,12 @@
 package ru.spbau.lupuleac.cli.commands
 
 import java.io.{File, FileNotFoundException}
+import java.util.regex.PatternSyntaxException
 
 import org.scalatest.TryValues._
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.language.postfixOps
 
 class CommandTest extends FlatSpec with Matchers {
   def makeText(lines: String*): String = lines.mkString(System.lineSeparator())
@@ -112,5 +115,103 @@ class CommandTest extends FlatSpec with Matchers {
       List("src/test/resources/a.txt", "src/test/resources/not_a_file"))(
       EmptyInput())
     outOr.failure.exception shouldBe a[FileNotFoundException]
+  }
+
+  "Grep config" should "evaluate arguments in this case correctly" in {
+    val conf = GrepCommand.conf.parse("-i", "-A", "5", "[a]*", "file1", "file2")
+    conf.success.value should be(
+      GrepCommand.GrepConfig(ignoreCase = true,
+                             wordRegex = false,
+                             5,
+                             List("file1", "file2"),
+                             "[a]*"))
+  }
+
+  "Grep config" should "evaluate arguments correctly if files are not provided" in {
+    val conf = GrepCommand.conf.parse("-i", "-w", "[a]*")
+    conf.success.value should be(
+      GrepCommand
+        .GrepConfig(ignoreCase = true, wordRegex = true, 0, List(), "[a]*"))
+  }
+
+  "Grep config" should "evaluate arguments correctly if there is one file" in {
+    val conf = GrepCommand.conf.parse("[a]*", "file1")
+    conf.success.value should be(
+      GrepCommand.GrepConfig(ignoreCase = false,
+                             wordRegex = false,
+                             0,
+                             List("file1"),
+                             "[a]*"))
+  }
+
+  "Grep config" should "fail if no pattern is provided" in {
+    val conf = GrepCommand.conf.parse("-w", "-A", "6")
+    conf.failure.exception should have message "Missing required argument"
+  }
+
+  "Grep config" should "if number of lines after context is not specified" in {
+    val conf = GrepCommand.conf.parse("-w", "-A", "fghj")
+    conf.failure.exception shouldBe a[NumberFormatException]
+  }
+
+  "Grep command" should "find all usages of \"and\" ignoring case here" in {
+    val expected = makeText(
+      "I was alone and it was night",
+      "And with endearing words so silent",
+      "A million images and words, long since forgotten",
+      "And as I wandered through the night",
+      "And the present now",
+      "The husband in the war who's never coming home",
+      "... https://genius.com/Beardfish-and-the-stone-said-if-i-could-speak-lyrics"
+    )
+    val outOr = GrepCommand(
+      List("-i", "AND", "src/test/resources/AndTheStoneSaid.txt"))(EmptyInput())
+    outOr.success.value should be(expected)
+  }
+
+  "Grep command" should "find only lower case \"and\" words" in {
+    val expected = makeText(
+      "I was alone and it was night",
+      "A million images and words, long since forgotten",
+      "... https://genius.com/Beardfish-and-the-stone-said-if-i-could-speak-lyrics"
+    )
+    val outOr = GrepCommand(
+      List("-w", "and", "src/test/resources/AndTheStoneSaid.txt"))(EmptyInput())
+    outOr.success.value should be(expected)
+  }
+
+  "Grep command" should "print file names before lines if there are several files" in {
+    val expected = makeText("src/test/resources/a.txt: hello world",
+                            "src/test/resources/several_lines: lines",
+                            "src/test/resources/several_lines: file")
+    val outOr = GrepCommand(
+      List("l",
+           "src/test/resources/a.txt",
+           "src/test/resources/several_lines"))(EmptyInput())
+    outOr.success.value should be(expected)
+  }
+
+  "Grep command" should "print lines after context" in {
+    val expected = makeText(
+      "lines",
+      "in",
+      "this"
+    )
+    val outOr = GrepCommand(
+      List("-A", "1", "in", "src/test/resources/several_lines"))(EmptyInput())
+    outOr.success.value should be(expected)
+  }
+
+  "Grep command" should "fail if the number of lines is negative" in {
+    val outOr = GrepCommand(
+      List("-A", "-1", "in", "src/test/resources/several_lines"))(EmptyInput())
+    outOr.failure.exception should have message ("Number of lines should not be a negative" +
+      " number")
+  }
+
+  "Grep command" should "fail if the pattern is incorrect" in {
+    val outOr = GrepCommand(List("[i*(n)", "src/test/resources/several_lines"))(
+      EmptyInput())
+    outOr.failure.exception shouldBe a[PatternSyntaxException]
   }
 }
