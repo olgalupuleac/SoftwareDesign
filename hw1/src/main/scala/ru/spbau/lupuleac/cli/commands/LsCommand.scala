@@ -17,6 +17,7 @@ case class LsCommand(stdin: Input, arguments: List[String]) extends Command {
   override def isValid: Boolean = true
 
   override def execute(interpreter: Interpreter): String = {
+    if (arguments.size > 1) return "bash: too much arguments"
     val target : String = if (arguments.isEmpty) "" else arguments.head
     val targetPath : file.Path = if (Paths.get(target).isAbsolute) {
       Paths.get(target)
@@ -24,6 +25,9 @@ case class LsCommand(stdin: Input, arguments: List[String]) extends Command {
       Paths.get(interpreter.currentDirectory.toString, target)
     }
     val targetFile : io.File = targetPath.toFile
+    if (!targetFile.exists()) {
+      return "bash: no such file or directory " + targetPath.toString
+    }
     if (targetFile.isDirectory) {
       targetFile.listFiles().map(f => f.getName).mkString(System.lineSeparator())
     } else {
