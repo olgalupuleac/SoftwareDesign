@@ -1,5 +1,7 @@
 package ru.spbau.lupuleac.cli.commands
 
+import java.io.File
+
 import ru.spbau.lupuleac.cli.Interpreter
 
 import scala.io.Source
@@ -77,6 +79,10 @@ trait Command {
   */
 object FileUtils {
   def apply(str: String): String = {
+    val testFile = new File(str)
+    if (!testFile.exists() || !testFile.canRead || testFile.isDirectory) {
+      return "bash: no such file " + str
+    }
     val file = Source.fromFile(str)
     val res = file.getLines.mkString("\n")
     file.close()

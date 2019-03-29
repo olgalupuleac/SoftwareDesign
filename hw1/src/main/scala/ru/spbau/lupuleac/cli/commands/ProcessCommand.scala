@@ -1,5 +1,7 @@
 package ru.spbau.lupuleac.cli.commands
 
+import java.io.File
+
 import ru.spbau.lupuleac.cli.Interpreter
 
 import scala.sys.process.Process
@@ -15,7 +17,7 @@ case class ProcessCommand(command: String, stdin: Input, arguments: List[String]
     val prefix = if (System.getProperty("os.name").startsWith("Win")) "cmd /c " else ""
     val args = arguments.mkString(" ")
     val sysCommand = prefix + command + " " + args
-    Process(sysCommand) !!
+    Process(sysCommand, new File(interpreter.currentDirectory.toString)) !!
   }
 
   override val name: String = "process"

@@ -1,5 +1,7 @@
 package ru.spbau.lupuleac.cli.commands
 
+import java.nio.file.Paths
+
 import ru.spbau.lupuleac.cli.Interpreter
 
 /**
@@ -14,6 +16,8 @@ case class CatCommand(stdin: Input, arguments: List[String]) extends Command {
     if (arguments.isEmpty) {
       return stdin.text
     }
-    arguments.map(x => FileUtils(x)).mkString("\n")
+    arguments.map(x => {
+      FileUtils(interpreter.currentDirectory.resolve(x).toString)
+    }).mkString("\n")
   }
 }
