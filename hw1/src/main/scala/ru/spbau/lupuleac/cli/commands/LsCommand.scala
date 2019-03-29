@@ -21,12 +21,11 @@ case class LsCommand(stdin: Input, arguments: List[String]) extends Command {
     val targetPath : file.Path = if (Paths.get(target).isAbsolute) {
       Paths.get(target)
     } else {
-      Paths.get(interpreter.curDir.toString, target)
+      Paths.get(interpreter.currentDirectory.toString, target)
     }
     val targetFile : io.File = targetPath.toFile
-    targetFile.listFiles()
     if (targetFile.isDirectory) {
-      targetFile.listFiles().map(f => f.getName).mkString("\n")
+      targetFile.listFiles().map(f => f.getName).mkString(System.lineSeparator())
     } else {
       targetFile.getName
     }

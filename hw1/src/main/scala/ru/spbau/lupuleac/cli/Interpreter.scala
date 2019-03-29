@@ -10,7 +10,7 @@ import ru.spbau.lupuleac.cli.commands.{CommandFactory, EmptyInput, Input, Stdin}
 class Interpreter {
   private val scope = new Scope()
 
-  var curDir : Path = Paths.get(System.getProperty("user.dir"))
+  var currentDirectory : Path = Paths.get(System.getProperty("user.dir"))
 
   /**
     * Checks if the token can be parsed as an assignment (e.g. x=1). If true, parses it and saves the result in scope.

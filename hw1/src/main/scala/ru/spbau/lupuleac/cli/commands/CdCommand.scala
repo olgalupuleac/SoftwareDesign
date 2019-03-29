@@ -1,7 +1,7 @@
 package ru.spbau.lupuleac.cli.commands
 
 import java.nio.file
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 
 import ru.spbau.lupuleac.cli.Interpreter
 
@@ -15,10 +15,10 @@ case class CdCommand(stdin: Input, arguments: List[String]) extends Command {
 
   override def execute(interpreter: Interpreter): String = {
     val targetPath : String = if (arguments.isEmpty) "/." else arguments.head
-    interpreter.curDir = if (Paths.get(targetPath).isAbsolute) {
-       Paths.get(targetPath)
+    interpreter.currentDirectory = if (Paths.get(targetPath).isAbsolute) {
+       Paths.get(targetPath).normalize()
     } else {
-      Paths.get(interpreter.curDir.toString, targetPath)
+      interpreter.currentDirectory.resolve(targetPath).normalize()
     }
     ""
   }
