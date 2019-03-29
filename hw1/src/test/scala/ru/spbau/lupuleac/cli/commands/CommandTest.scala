@@ -66,8 +66,8 @@ class CommandTest extends FlatSpec with Matchers {
   }
 
   "Cat command" should "change current directory" in {
-    CatCommand(EmptyInput(), List("hello"))(interpreter)
-    interpreter.currentDirectory.toString should endWith("hello")
+    CatCommand(EmptyInput(), List("src"))(interpreter)
+    interpreter.currentDirectory.toString should endWith("src")
   }
 
 }
