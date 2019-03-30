@@ -38,26 +38,30 @@ class Interpreter {
     val lexer = new Parser(scope)
     val listsOfTokens = lexer.splitLineToTokens(line)
     var input = EmptyInput(): Input
-    for (tokens <- listsOfTokens) {
-      var assignment = true
-      var commandName = None: Option[String]
-      val args = collection.mutable.ListBuffer[String]()
-      for (token <- tokens) {
-        if (assignment) {
-          assignment = processAssignment(token)
-          if (!assignment) {
-            commandName = Some(token)
+    try {
+      for (tokens <- listsOfTokens) {
+        var assignment = true
+        var commandName = None: Option[String]
+        val args = collection.mutable.ListBuffer[String]()
+        for (token <- tokens) {
+          if (assignment) {
+            assignment = processAssignment(token)
+            if (!assignment) {
+              commandName = Some(token)
+            }
+          } else {
+            args += token
           }
-        } else {
-          args += token
+        }
+        if (commandName.isDefined) {
+          val command = CommandFactory(commandName.get, input, args.toList)
+          val out = command(this)
+          input = Stdin(out)
+          args.clear()
         }
       }
-      if (commandName.isDefined) {
-        val command = CommandFactory(commandName.get, input, args.toList)
-        val out = command(this)
-        input = Stdin(out)
-        args.clear()
-      }
+    } catch (e: Exception) {
+      return e.getMessage
     }
     input.text
   }

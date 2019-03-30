@@ -27,7 +27,7 @@ class CommandTest extends FlatSpec with Matchers {
   }
 
   "Wc command" should "ignore stdin if the arguments are provided" in {
-    WcCommand(Stdin("aaa a"), List("src/test/resources/a.txt"))(interpreter) should be("1 2 11 src/test/resources/a.txt\n1 2 11 total")
+    WcCommand(Stdin("aaa a"), List("src/test/resource65s/a.txt"))(interpreter) should be("1 2 11 src/test/resources/a.txt\n1 2 11 total")
   }
 
   "Wc command" should "print an error if arguments are incorrect" in {
@@ -62,7 +62,7 @@ class CommandTest extends FlatSpec with Matchers {
   }
 
   "Ls command" should "print list of files" in {
-    LsCommand(EmptyInput(), List("src"))(interpreter) should be("main\ntest")
+    LsCommand(EmptyInput(), List("src"))(interpreter) should be("main" + System.lineSeparator + "test")
   }
 
   "Cd command" should "change current directory" in {

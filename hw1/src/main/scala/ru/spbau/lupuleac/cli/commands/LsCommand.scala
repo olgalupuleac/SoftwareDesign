@@ -17,7 +17,7 @@ case class LsCommand(stdin: Input, arguments: List[String]) extends Command {
   override def isValid: Boolean = true
 
   override def execute(interpreter: Interpreter): String = {
-    if (arguments.size > 1) return "bash: too much arguments"
+    if (arguments.size > 1) throw new Exception("Too much arguments")
     val target : String = if (arguments.isEmpty) "" else arguments.head
     val targetPath : file.Path = if (Paths.get(target).isAbsolute) {
       Paths.get(target)
